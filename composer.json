@@ -1,0 +1,35 @@
+{
+  "name": "integer-net/solr-base",
+  "description": "Base library for IntegerNet_Solr open source version",
+  "require": {
+    "katzgrau/klogger": "~1.0",
+    "psr/cache": "1.0.0"
+  },
+  "require-dev": {
+    "mikey179/vfsStream": "~1.3",
+    "phpunit/phpunit": "~4.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "IntegerNet\\Solr\\": "src/Solr/"
+    },
+    "psr-0": {
+      "Apache_Solr_": "lib/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "IntegerNet\\Solr\\": "test/Solr/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Andreas von Studnitz",
+      "email": "avs@integer-net.de"
+    },
+    {
+      "name": "Fabian Schmengler",
+      "email": "fs@integer-net.de"
+    }
+  ]
+}
