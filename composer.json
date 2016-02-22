@@ -2,8 +2,7 @@
   "name": "integer-net/solr-base",
   "description": "Base library for IntegerNet_Solr open source version",
   "require": {
-    "katzgrau/klogger": "~1.0",
-    "psr/cache": "1.0.0"
+    "katzgrau/klogger": "~1.0"
   },
   "require-dev": {
     "mikey179/vfsStream": "~1.3",
