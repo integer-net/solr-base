@@ -1,0 +1,3 @@
+src/Solr lib/IntegerNet_Solr/Solr
+lib/Apache/Solr lib/IntegerNet_Solr/Apache_Solr
+lib/Psr/Log lib/IntegerNet_Solr/Psr_Log
