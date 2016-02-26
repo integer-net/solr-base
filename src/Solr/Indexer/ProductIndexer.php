@@ -9,6 +9,7 @@
  */
 namespace IntegerNet\Solr\Indexer;
 use IntegerNet\Solr\Implementor\ProductRenderer;
+use IntegerNet\Solr\Implementor\StoreEmulation;
 use IntegerNet\Solr\Resource\ResourceFacade;
 use IntegerNet\Solr\Implementor\Config;
 use IntegerNet\Solr\Implementor\EventDispatcher;
@@ -21,6 +22,8 @@ use IntegerNet\Solr\Implementor\IndexCategoryRepository;
 
 class ProductIndexer
 {
+    const CONTENT_TYPE = 'product';
+    
     /** @var  int */
     private $_defaultStoreId;
     /**
@@ -35,13 +38,14 @@ class ProductIndexer
     private $_eventDispatcher;
     /** @var  AttributeRepository */
     private $_attributeRepository;
-    /** @var  CategoryRepository */
+    /** @var  IndexCategoryRepository */
     private $_categoryRepository;
     /** @var  ProductRepository */
     private $_productRepository;
-
     /** @var  ProductRenderer */
     private $_renderer;
+    /** @var StoreEmulation */
+    private $storeEmulation;
 
     /**
      * @param int $defaultStoreId
@@ -52,10 +56,11 @@ class ProductIndexer
      * @param IndexCategoryRepository $_categoryRepository
      * @param ProductRepository $_productRepository
      * @param ProductRenderer $_renderer
+     * @param StoreEmulation $storeEmulation
      */
     public function __construct($defaultStoreId, array $_config, ResourceFacade $_resource, EventDispatcher $_eventDispatcher,
                                 AttributeRepository $_attributeRepository, IndexCategoryRepository $_categoryRepository,
-                                ProductRepository $_productRepository, ProductRenderer $_renderer)
+                                ProductRepository $_productRepository, ProductRenderer $_renderer, StoreEmulation $storeEmulation)
     {
         $this->_defaultStoreId = $defaultStoreId;
         $this->_config = $_config;
@@ -65,6 +70,7 @@ class ProductIndexer
         $this->_categoryRepository = $_categoryRepository;
         $this->_productRepository = $_productRepository;
         $this->_renderer = $_renderer;
+        $this->storeEmulation = $storeEmulation;
     }
 
     protected function _getStoreConfig($storeId = null)
@@ -82,12 +88,14 @@ class ProductIndexer
     /**
      * @param array|null $productIds Restrict to given Products if this is set
      * @param boolean|string $emptyIndex Whether to truncate the index before refilling it
-     * @param null|Mage_Core_Model_Store $restrictToStore
+     * @param null|int[] $restrictToStoreIds
+     * @throws \Exception
+     * @throws \IntegerNet\Solr\Exception
      */
-    public function reindex($productIds = null, $emptyIndex = false, $restrictToStore = null)
+    public function reindex($productIds = null, $emptyIndex = false, $restrictToStoreIds = null)
     {
         if (is_null($productIds)) {
-            $this->_getResource()->checkSwapCoresConfiguration($restrictToStore === null ? null : $restrictToStore->getId());
+            $this->_getResource()->checkSwapCoresConfiguration($restrictToStoreIds);
         }
 
         $pageSize = intval($this->_getStoreConfig()->getIndexingConfig()->getPagesize());
@@ -96,35 +104,40 @@ class ProductIndexer
         }
 
         foreach($this->_config as $storeId => $storeConfig) {
-            if (!is_null($restrictToStore) && ($restrictToStore->getId() != $storeId)) {
+            if (!is_null($restrictToStoreIds) && !in_array($storeId, $restrictToStoreIds)) {
                 continue;
             }
 
             if (!$storeConfig->getGeneralConfig()->isActive()) {
                 continue;
             }
+            $this->storeEmulation->start($storeId);
+            try {
 
-            if (is_null($productIds) && $storeConfig->getIndexingConfig()->isSwapCores()) {
-                $this->_getResource()->setUseSwapIndex();
+                if (is_null($productIds) && $storeConfig->getIndexingConfig()->isSwapCores()) {
+                    $this->_getResource()->setUseSwapIndex();
+                }
+
+                if (
+                    ($emptyIndex && $storeConfig->getIndexingConfig()->isDeleteDocumentsBeforeIndexing())
+                    || $emptyIndex === 'force'
+                ) {
+                    $this->_getResource()->deleteAllDocuments($storeId, self::CONTENT_TYPE);
+                }
+
+                $productCollection = $this->_productRepository->setPageSizeForIndex($pageSize)->getProductsForIndex($storeId, $productIds);
+                $this->_indexProductCollection($emptyIndex, $productCollection, $storeId);
+
+                $this->_getResource()->setUseSwapIndex(false);
+            } catch (\Exception $e) {
+                $this->storeEmulation->stop();
+                throw $e;
             }
-
-            if (
-                ($emptyIndex && $storeConfig->getIndexingConfig()->isDeleteDocumentsBeforeIndexing())
-                || $emptyIndex === 'force'
-            ) {
-                $this->_getResource()->deleteAllDocuments($storeId);
-            }
-
-            $productCollection = $this->_productRepository->setPageSizeForIndex($pageSize)->getProductsForIndex($storeId, $productIds);
-            $this->_indexProductCollection($emptyIndex, $productCollection, $storeId);
-
-            $this->_getResource()->setUseSwapIndex(false);
+            $this->storeEmulation->stop();
         }
 
-        $this->_renderer->stopStoreEmulation();
-
         if (is_null($productIds)) {
-            $this->_getResource()->swapCores($restrictToStore === null ? null : $restrictToStore->getId());
+            $this->_getResource()->swapCores($restrictToStoreIds);
         }
     }
 
@@ -165,7 +178,7 @@ class ProductIndexer
             'category' => $categoryIds, // @todo get category ids from parent anchor categories as well
             'category_name_t_mv' => $this->_categoryRepository->getCategoryNames($categoryIds, $product->getStoreId()),
             'store_id' => $product->getStoreId(),
-            'content_type' => 'product',
+            'content_type' => self::CONTENT_TYPE,
             'is_visible_in_catalog_i' => $product->isVisibleInCatalog(),
             'is_visible_in_search_i' => $product->isVisibleInSearch(),
         ));
