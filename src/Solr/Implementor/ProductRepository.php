@@ -23,9 +23,8 @@ interface ProductRepository
     /**
      * Return product iterator for child products
      *
-     * @param int $storeId Child products will be returned that are visible in this store and with store specific values
-     * @param string $parentSku SKU of the composite parent product
+     * @param Product $parent The composite parent product. Child products will be returned that are visible in the same store and with store specific values
      * @return ProductIterator
      */
-    public function getChildProducts($storeId, $parentSku);
+    public function getChildProducts(Product $parent);
 }
