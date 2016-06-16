@@ -98,11 +98,6 @@ class ProductIndexer
             $this->_getResource()->checkSwapCoresConfiguration($restrictToStoreIds);
         }
 
-        $pageSize = intval($this->_getStoreConfig()->getIndexingConfig()->getPagesize());
-        if ($pageSize <= 0) {
-            $pageSize = 100;
-        }
-
         foreach($this->_config as $storeId => $storeConfig) {
             if (!is_null($restrictToStoreIds) && !in_array($storeId, $restrictToStoreIds)) {
                 continue;
@@ -111,6 +106,7 @@ class ProductIndexer
             if (!$storeConfig->getGeneralConfig()->isActive()) {
                 continue;
             }
+
             $this->storeEmulation->start($storeId);
             try {
 
@@ -125,8 +121,13 @@ class ProductIndexer
                     $this->_getResource()->deleteAllDocuments($storeId, self::CONTENT_TYPE);
                 }
 
+                $pageSize = intval($storeConfig->getIndexingConfig()->getPagesize());
+                if ($pageSize <= 0) {
+                    $pageSize = 100;
+                }
+
                 $productCollection = $this->_productRepository->setPageSizeForIndex($pageSize)->getProductsForIndex($storeId, $productIds);
-                $this->_indexProductCollection($emptyIndex, $productCollection, $storeId);
+                $this->_indexProductCollection($emptyIndex, $productCollection, $storeId, $productIds);
 
                 $this->_getResource()->setUseSwapIndex(false);
             } catch (\Exception $e) {
@@ -181,6 +182,7 @@ class ProductIndexer
             'content_type' => self::CONTENT_TYPE,
             'is_visible_in_catalog_i' => $product->isVisibleInCatalog(),
             'is_visible_in_search_i' => $product->isVisibleInSearch(),
+            'has_special_price_i' => $product->hasSpecialPrice(),
         ));
 
         $this->_addBoostToProductData($product, $productData);
@@ -193,7 +195,10 @@ class ProductIndexer
 
         $this->_addCategoryProductPositionsToProductData($product, $productData);
 
-        $this->_eventDispatcher->dispatch('integernet_solr_get_product_data', array('product' => $product, 'product_data' => $productData));
+        $this->_eventDispatcher->dispatch('integernet_solr_get_product_data', array(
+            'product' => $product, 
+            'product_data' => $productData
+        ));
 
         return $productData->getData();
     }
@@ -201,12 +206,24 @@ class ProductIndexer
     /**
      * Get unique identifier for Solr
      *
-     * @param Mage_Catalog_Model_Product $product
+     * @param \IntegerNet\Solr\Implementor\Product $product
      * @return string
      */
     protected function _getSolrId($product)
     {
-        return $product->getId() . '_' . $product->getStoreId();
+        return $this->_getSolrIdByProductIdAndStoreId($product->getId(), $product->getStoreId());
+    }
+
+    /**
+     * Get unique identifier for Solr
+     *
+     * @param int $productId
+     * @param int $storeId
+     * @return string
+     */
+    protected function _getSolrIdByProductIdAndStoreId($productId, $storeId)
+    {
+        return $productId . '_' . $storeId;
     }
 
     /**
@@ -216,40 +233,78 @@ class ProductIndexer
     protected function _addFacetsToProductData(Product $product, IndexDocument $productData)
     {
         foreach ($this->_attributeRepository->getFilterableInCatalogOrSearchAttributes($product->getStoreId()) as $attribute) {
-            switch ($attribute->getFacetType()) {
-                case Attribute::FACET_TYPE_SELECT:
-                    $rawValue = $product->getAttributeValue($attribute);
-                    if ($rawValue && $this->_isInteger($rawValue)) {
-                        $productData->setData($attribute->getAttributeCode() . '_facet', $rawValue);
-                    }
-                    break;
-                case Attribute::FACET_TYPE_MULTISELECT:
-                    $rawValue = $product->getAttributeValue($attribute);
-                    if ($rawValue && $this->_isInteger($rawValue)) {
-                        $productData->setData($attribute->getAttributeCode() . '_facet', explode(',', $rawValue));
-                    }
-                    break;
-            }
-
-            $indexField = new IndexField($attribute);
-            $fieldName = $indexField->getFieldName();
-            if (!$productData->hasData($fieldName)) {
-                $value = $product->getSearchableAttributeValue($attribute);
-                if (!empty($value)) {
-                    $productData->setData($fieldName, $value);
-
-                    if (strstr($fieldName, '_t') == true && $attribute->getUsedForSortBy()) {
-                        $productData->setData(
-                            $indexField->forSorting()->getFieldName(),
-                            $value
-                        );
-                    }
-                }
-            }
 
             if ($attribute->getAttributeCode() == 'price') {
                 $price = $product->getPrice();
                 $productData->setData('price_f', floatval($price));
+                continue;
+            }
+
+            $facetFieldName = $attribute->getAttributeCode() . '_facet';
+            if ($product->getData($attribute->getAttributeCode())) {
+
+                switch ($attribute->getFacetType()) {
+                    case Attribute::FACET_TYPE_SELECT:
+                        $rawValue = $product->getAttributeValue($attribute);
+                        if ($rawValue && $this->_isInteger($rawValue)) {
+                            $productData->setData($facetFieldName, $rawValue);
+                        }
+                        break;
+                    case Attribute::FACET_TYPE_MULTISELECT:
+                        $rawValue = $product->getAttributeValue($attribute);
+                        if ($rawValue && $this->_isInteger($rawValue)) {
+                            $productData->setData($facetFieldName, explode(',', $rawValue));
+                        }
+                        break;
+                }
+
+                $indexField = new IndexField($attribute);
+                $fieldName = $indexField->getFieldName();
+                if (!$productData->hasData($fieldName)) {
+                    $value = $product->getSearchableAttributeValue($attribute);
+                    if (!empty($value)) {
+                        $productData->setData($fieldName, $value);
+
+                        if (strstr($fieldName, '_t') == true && $attribute->getUsedForSortBy()) {
+                            $productData->setData(
+                                $indexField->forSorting()->getFieldName(),
+                                $value
+                            );
+                        }
+                    }
+                }
+            }
+            
+            $hasChildProducts = true;
+            try {
+                $childProducts = $this->_getChildProductsCollection($product);
+            } catch (\Exception $e) {
+                $hasChildProducts = false;
+            }
+
+            if ($hasChildProducts && $attribute->getBackendType() != 'decimal') {
+
+                foreach($childProducts as $childProduct) {
+                    /** @var $childProduct Product */
+                    if ($childValues = $childProduct->getAttributeValue($attribute)
+                    ) {
+                        foreach(array_map('trim', explode(',', $childValues)) as $childValue) {
+                            if (!$productData->hasData($facetFieldName)) {
+                                $productData->setData($facetFieldName, $childValue);
+                            } else {
+                                $fieldValue = $productData->getData($facetFieldName);
+                                if (!is_array($fieldValue) && $childValue != $fieldValue) {
+                                    $productData->setData($facetFieldName, array($fieldValue, $childValue));
+                                } else {
+                                    if (is_array($fieldValue) && !in_array($childValue, $fieldValue)) {
+                                        $fieldValue[] = $childValue;
+                                        $productData->setData($facetFieldName, $fieldValue);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -332,9 +387,14 @@ class ProductIndexer
                                 if (!is_array($fieldValue) && $childValue != $fieldValue) {
                                     $productData->setData($fieldName, array($fieldValue, $childValue));
                                 } else {
-                                    if (is_array($fieldValue) && !in_array($childValue, $fieldValue)) {
-                                        $fieldValue[] = $childValue;
-                                        $productData->setData($fieldName, $fieldValue);
+                                    if (!is_array($childValue)) {
+                                        $childValue = array($childValue);
+                                    }
+                                    foreach($childValue as $singleChildValue) {
+                                        if (is_array($fieldValue) && !in_array($singleChildValue, $fieldValue)) {
+                                            $fieldValue[] = $singleChildValue;
+                                            $productData->setData($fieldName, $fieldValue);
+                                        }
                                     }
                                 }
                             }
@@ -406,20 +466,29 @@ class ProductIndexer
     /**
      * @param boolean $emptyIndex
      * @param \IntegerNet\Solr\Implementor\ProductIterator $productCollection
+     * @param int[] $productIds
      * @param int $storeId
      * @return int
      */
-    protected function _indexProductCollection($emptyIndex, $productCollection, $storeId)
+    protected function _indexProductCollection($emptyIndex, $productCollection, $storeId, $productIds = array())
     {
         $combinedProductData = array();
         $idsForDeletion = array();
+        $productIds = array_flip((array)$productIds);
 
         foreach ($productCollection as $product) {
+            if (isset($productIds[$product->getId()])) {
+                unset($productIds[$product->getId()]);
+            }
             if ($product->isIndexable()) {
                 $combinedProductData[] = $this->_getProductData($product);
             } else {
                 $idsForDeletion[] = $this->_getSolrId($product);
             }
+        }
+        
+        foreach($productIds as $productId => $value) {
+            $idsForDeletion[] = $this->_getSolrIdByProductIdAndStoreId($productId, $storeId);
         }
 
         if (!$emptyIndex && sizeof($idsForDeletion)) {
