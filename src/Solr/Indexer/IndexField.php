@@ -69,7 +69,7 @@ class IndexField
                     return $this->attribute->getAttributeCode() . '_t';
 
                 case 'int':
-                    if ($this->attribute->getInputType() != 'select') {
+                    if ($this->attribute->getFacetType() !== Attribute::FACET_TYPE_SELECT) {
                         return $this->attribute->getAttributeCode() . '_i';
                     }
                     // fallthrough intended
@@ -86,7 +86,7 @@ class IndexField
                     return $this->attribute->getAttributeCode() . '_t_mv';
 
                 case 'int':
-                    if ($this->attribute->getInputType() != 'select') {
+                    if ($this->attribute->getFacetType() != Attribute::FACET_TYPE_SELECT) {
                         return $this->attribute->getAttributeCode() . '_i_mv';
                     }
                 // fallthrough intended
