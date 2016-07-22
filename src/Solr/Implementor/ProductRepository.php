@@ -12,7 +12,7 @@ namespace IntegerNet\Solr\Implementor;
 interface ProductRepository
 {
     /**
-     * Return product iterator, which may implement lazy loading
+     * Return product iterator, which should implement lazy loading and allows a callback for batch processing
      *
      * @param int $storeId  Products will be returned that are visible in this store and with store specific values
      * @param null|int[] $productIds filter by product ids

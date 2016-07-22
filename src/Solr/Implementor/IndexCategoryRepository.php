@@ -9,6 +9,8 @@
  */
 namespace IntegerNet\Solr\Implementor;
 
+use IntegerNet\Solr\Indexer\Data\CategoryPositionCollection;
+
 interface IndexCategoryRepository
 {
     /**
@@ -26,10 +28,10 @@ interface IndexCategoryRepository
      */
     public function getCategoryIds($product);
     /**
-     * Retrieve product category identifiers
+     * Retrieve positions (order) in categories for given product
      *
      * @param Product $product
-     * @return array
+     * @return array|CategoryPositionCollection
      */
     public function getCategoryPositions($product);
 
