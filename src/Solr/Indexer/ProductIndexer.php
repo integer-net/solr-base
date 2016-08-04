@@ -244,7 +244,7 @@ class ProductIndexer
             }
 
             $facetFieldName = $attribute->getAttributeCode() . '_facet';
-            if ($product->getData($attribute->getAttributeCode())) {
+            if ($product->getAttributeValue($attribute) !== null) {
 
                 switch ($attribute->getFacetType()) {
                     case Attribute::FACET_TYPE_SELECT:
