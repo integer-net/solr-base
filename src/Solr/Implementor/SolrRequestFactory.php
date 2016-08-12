@@ -24,6 +24,7 @@ interface SolrRequestFactory
     const REQUEST_MODE_CATEGORY = 4;
     const REQUEST_MODE_CMS_PAGE_SUGGEST = 5;
     const REQUEST_MODE_CATEGORY_SUGGEST = 6;
+    const REQUEST_MODE_CMS_PAGE = 7;
 
 
     /**
