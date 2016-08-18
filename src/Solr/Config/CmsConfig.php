@@ -16,11 +16,25 @@ final class CmsConfig
     private $active;
 
     /**
-     * @param bool $active
+     * @var bool
      */
-    public function __construct($active)
+    private $useInSearchResults;
+
+    /**
+     * @var int
+     */
+    private $maxNumberResults;
+
+    /**
+     * @param bool $active
+     * @param bool $useInSearchResults
+     * @param int $maxNumberResults
+     */
+    public function __construct($active, $useInSearchResults, $maxNumberResults)
     {
         $this->active = $active;
+        $this->useInSearchResults = $useInSearchResults;
+        $this->maxNumberResults = $maxNumberResults;
     }
 
     /**
@@ -29,6 +43,22 @@ final class CmsConfig
     public function isActive()
     {
         return $this->active;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function canUseInSearchResults()
+    {
+        return $this->useInSearchResults;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxNumberResults()
+    {
+        return $this->maxNumberResults;
     }
 
 }

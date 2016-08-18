@@ -28,15 +28,27 @@ final class CategoryConfig
     private $indexerActive;
 
     /**
+     * @var bool
+     */
+    private $useInSearchResults;
+
+    /**
+     * @var int
+     */
+    private $maxNumberResults;
+
+    /**
      * @param bool $active
      * @param int $filterPosition
      * @param bool $indexerActive
      */
-    public function __construct($active, $filterPosition, $indexerActive)
+    public function __construct($active, $filterPosition, $indexerActive, $useInSearchResults, $maxNumberResults)
     {
         $this->active = $active;
         $this->filterPosition = $filterPosition;
         $this->indexerActive = $indexerActive;
+        $this->useInSearchResults = $useInSearchResults;
+        $this->maxNumberResults = $maxNumberResults;
     }
 
     /**
@@ -61,6 +73,22 @@ final class CategoryConfig
     public function isIndexerActive()
     {
         return $this->indexerActive;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function canUseInSearchResults()
+    {
+        return $this->useInSearchResults;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxNumberResults()
+    {
+        return $this->maxNumberResults;
     }
 
 }
