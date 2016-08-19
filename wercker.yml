@@ -1,10 +1,9 @@
 box: php
-no-response-timeout: 10
 build-56:
   box: php:5.6.24-cli
   steps:
     - install-packages:
-        packages: git zip bzip2
+        packages: git zip
     - script:
         name: install composer
         code: curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
@@ -18,7 +17,7 @@ build-70:
   box: php:7.0.9-cli
   steps:
     - install-packages:
-        packages: git zip bzip2
+        packages: git zip
     - script:
         name: install composer
         code: curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
