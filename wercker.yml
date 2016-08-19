@@ -1,4 +1,5 @@
 box: php
+no-response-timeout: 10
 build-box:
   steps:
     - install-packages:
@@ -16,10 +17,10 @@ build-box:
 #        code: phpbrew install 5.5.37 +mysql +pdo +apxs2 +curl +dom +hash +iconv +json +mbstring +mbregex +mcrypt +mhash +opcache +openssl +pcre +phar +session +intl +filter +ctype +gd +zip
     - script:
         name: install PHP 5.6.24
-        code: phpbrew install 5.6.24 +mysql +pdo +apxs2 +curl +dom +hash +iconv +json +mbstring +mbregex +mcrypt +mhash +opcache +openssl +pcre +phar +session +intl +filter +ctype +gd +zip
+        code: phpbrew -q install 5.6.24 +mysql +pdo +apxs2 +curl +dom +hash +iconv +json +mbstring +mbregex +mcrypt +mhash +opcache +openssl +pcre +phar +session +intl +filter +ctype +gd +zip
     - script:
         name: install PHP 7.0.9
-        code: phpbrew install 7.0.9 +mysql +pdo +apxs2 +curl +dom +hash +iconv +json +mbstring +mbregex +mcrypt +mhash +opcache +openssl +pcre +phar +session +intl +filter +ctype +gd +zip
+        code: phpbrew -q install 7.0.9 +mysql +pdo +apxs2 +curl +dom +hash +iconv +json +mbstring +mbregex +mcrypt +mhash +opcache +openssl +pcre +phar +session +intl +filter +ctype +gd +zip
     - script:
         name: install composer
         code: curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
