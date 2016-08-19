@@ -1,0 +1,29 @@
+box: php
+build-56:
+  box: php:5.6.24-cli
+  steps:
+    - install-packages:
+        packages: git zip
+    - script:
+        name: install composer
+        code: curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+    - script:
+        name: install dependencies
+        code: composer install --no-interaction
+    - script:
+        name: run tests
+        code: vendor/bin/phpunit
+build-70:
+  box: php:7.0.9-cli
+  steps:
+    - install-packages:
+        packages: git zip
+    - script:
+        name: install composer
+        code: curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+    - script:
+        name: install dependencies
+        code: composer install --no-interaction
+    - script:
+        name: run tests
+        code: vendor/bin/phpunit
