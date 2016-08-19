@@ -3,7 +3,7 @@ no-response-timeout: 10
 build-box:
   steps:
     - install-packages:
-        packages: git zip bzip2 libxml2-dev libcurl4-openssl-dev pkg-config libssl-dev
+        packages: git zip bzip2 libxml2-dev libcurl4-openssl-dev pkg-config libssl-dev libmcrypt
     - script:
         name: install phpbrew
         code: |-
