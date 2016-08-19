@@ -2,7 +2,7 @@ box: php
 dev:
   steps:
     - install-packages:
-        packages: git
+        packages: git zip
     - script:
         name: install composer
         code: curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
@@ -12,7 +12,7 @@ dev:
 build:
   steps:
     - install-packages:
-        packages: git
+        packages: git zip
     - script:
         name: install composer
         code: curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
@@ -21,4 +21,4 @@ build:
         code: composer install --no-interaction
     - script:
         name: PHPUnit
-        code: phpunit
+        code: vendor/bin/phpunit
