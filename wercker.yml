@@ -21,4 +21,4 @@ build:
         code: composer install --no-interaction
     - script:
         name: PHPUnit
-		code: phpunit
+        code: phpunit
