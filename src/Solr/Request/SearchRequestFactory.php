@@ -17,7 +17,7 @@ use IntegerNet\Solr\Query\SearchQueryBuilder;
 use IntegerNet\Solr\Query\SearchString;
 use IntegerNet\Solr\Resource\ResourceFacade;
 
-class SearchRequestFactory extends RequestFactory
+class SearchRequestFactory extends BaseRequestFactory
 {
     /**
      * @var $fuzzyConfig FuzzyConfig
