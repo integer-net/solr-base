@@ -17,17 +17,26 @@ final class FakeRequestFactory implements RequestFactory
      * @var Request[]
      */
     private $requests = [];
+    private $response = '{}';
     /**
      * @return Request
      */
     public function createRequest()
     {
-        return $this->requests[] = new FakeRequest();
+        return $this->requests[] = new FakeRequest($this->response);
     }
 
     public function getLastRequest()
     {
         return end($this->requests);
+    }
+
+    /**
+     * @param string $response
+     */
+    public function setResponse($response)
+    {
+        $this->response = $response;
     }
 
 }

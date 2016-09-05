@@ -18,6 +18,12 @@ class FakeRequestFactoryTest extends \PHPUnit_Framework_TestCase
         $factory = new FakeRequestFactory();
         $this->assertInstanceOf(FakeRequest::class, $factory->createRequest());
     }
+    public function testItCreatesFakeRequestWithResponse()
+    {
+        $factory = new FakeRequestFactory();
+        $factory->setResponse('I am Jason');
+        $this->assertEquals('I am Jason', $factory->createRequest()->doRequest()->getRawResponse());
+    }
     public function testAccessToCreatedFakeRequests()
     {
         $factory = new FakeRequestFactory();

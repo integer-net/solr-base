@@ -32,6 +32,17 @@ class ResponseDecorator implements SolrResponse
         $this->apacheSolrResponse = $response;
     }
 
+    /**
+     * Returns raw JSON response from Solr
+     *
+     * @return string
+     */
+    public function getRawResponse()
+    {
+        return $this->apacheSolrResponse->getRawResponse();
+    }
+
+
     function __get($name)
     {
         return $this->apacheSolrResponse->__get($name);

@@ -18,6 +18,12 @@ namespace IntegerNet\Solr\Resource;
 interface SolrResponse
 {
     /**
+     * Returns raw JSON response from Solr
+     *
+     * @return string
+     */
+    public function getRawResponse();
+    /**
      * @param SolrResponse $other
      * @param int $pageSize
      * @return SolrResponse
