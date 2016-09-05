@@ -10,13 +10,12 @@
 namespace IntegerNet\Solr\Request;
 
 use IntegerNet\Solr\Config\FuzzyConfig;
-use IntegerNet\Solr\Implementor\AttributeRepository;
-use IntegerNet\Solr\Implementor\EventDispatcher;
+use IntegerNet\Solr\Config\ResultsConfig;
 use IntegerNet\Solr\Implementor\HasUserQuery;
+use IntegerNet\Solr\Query\SearchParamsBuilder;
 use IntegerNet\Solr\Query\SearchQueryBuilder;
 use IntegerNet\Solr\Query\SearchString;
 use IntegerNet\Solr\Resource\ResourceFacade;
-use IntegerNet\Solr\Query\SearchParamsBuilder;
 
 class SearchRequestFactory extends RequestFactory
 {
@@ -76,7 +75,7 @@ class SearchRequestFactory extends RequestFactory
     }
 
     /**
-     * @return \IntegerNet\Solr\Request\SearchRequest
+     * @return SearchRequest
      */
     public function createRequest()
     {

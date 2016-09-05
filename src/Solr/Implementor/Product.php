@@ -28,6 +28,9 @@ interface Product
 
     public function isVisibleInSearch();
 
+    /**
+     * @return int
+     */
     public function hasSpecialPrice();
 
     public function getSolrBoost();
