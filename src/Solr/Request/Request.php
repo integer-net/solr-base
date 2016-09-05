@@ -9,7 +9,7 @@
  */
 namespace IntegerNet\Solr\Request;
 
-use IntegerNet\Solr\Resource\SolrResponse;
+use IntegerNet\Solr\Response\Response as SolrResponse;
 
 interface Request
 {

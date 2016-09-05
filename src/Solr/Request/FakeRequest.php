@@ -10,8 +10,8 @@
 
 namespace IntegerNet\Solr\Request;
 
-use IntegerNet\Solr\Resource\ResponseDecorator;
-use IntegerNet\Solr\Resource\SolrResponse;
+use IntegerNet\Solr\Response\ApacheSolrResponse as ResponseDecorator;
+use IntegerNet\Solr\Response\Response;
 
 /**
  * Fake Request object to be used in integration tests
@@ -30,7 +30,7 @@ class FakeRequest implements Request
 
     /**
      * @param string[] $activeFilterAttributeCodes
-     * @return SolrResponse
+     * @return Response
      */
     public function doRequest($activeFilterAttributeCodes = array())
     {

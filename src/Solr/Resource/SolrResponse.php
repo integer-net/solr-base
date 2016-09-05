@@ -8,34 +8,11 @@
  * @author     Fabian Schmengler <fs@integer-net.de>
  */
 namespace IntegerNet\Solr\Resource;
+use IntegerNet\Solr\Response\Response;
 
 /**
- * Interface SolrResponse
+ * @deprecated alias for BC compatibility
  *
- * @todo replace Apache_Solr_Response entirely with better abstraction and defined interface
- * @package IntegerNet\Solr\Resource
+ * autoload real class where alias is defined
  */
-interface SolrResponse
-{
-    /**
-     * Returns raw JSON response from Solr
-     *
-     * @return string
-     */
-    public function getRawResponse();
-    /**
-     * @param SolrResponse $other
-     * @param int $pageSize
-     * @return SolrResponse
-     */
-    public function merge(SolrResponse $other, $pageSize);
-    /**
-     * Returns new result with slice from item number $from until item number $from + $length
-     *
-     * @param $from
-     * @param $length
-     * @return SolrResponse
-     */
-    public function slice($from, $length);
-
-}
+\class_exists(Response::class);

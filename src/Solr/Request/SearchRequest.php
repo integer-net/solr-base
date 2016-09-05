@@ -19,7 +19,7 @@ use IntegerNet\Solr\Query\ParamsBuilder;
 use IntegerNet\Solr\Query\SearchParamsBuilder;
 use IntegerNet\Solr\Query\SearchQueryBuilder;
 use IntegerNet\Solr\Resource\ResourceFacade;
-use IntegerNet\Solr\Resource\SolrResponse;
+use IntegerNet\Solr\Response\Response as SolrResponse;
 use IntegerNet\Solr\Resource\LoggerDecorator;
 use Psr\Log\LoggerInterface;
 
