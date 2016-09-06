@@ -22,7 +22,8 @@ class ApacheSolrResponseTest extends \PHPUnit_Framework_TestCase
             new \IntegerNet\Solr\Resource\ResponseDecorator($this->createApacheSolrResponse('{}'))
         );
     }
-    public function testDocumentCount()
+
+    public function testDocuments()
     {
         $response = new ApacheSolrResponse($this->createApacheSolrResponse(\json_encode([
             'response' => [
@@ -36,7 +37,17 @@ class ApacheSolrResponseTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ])));
-        $this->assertEquals(2, $response->getDocumentCount());
+        $expectedDocuments = [
+            ['product_id' => 2],
+            ['product_id' => 3],
+        ];
+        $documents = $response->documents();
+        $this->assertInstanceOf(DocumentCollection::class, $documents);
+        $this->assertCount(2, $documents);
+        $this->assertEquals($expectedDocuments, $documents->asArray());
+        $firstDocument = \iterator_to_array($documents)[0];
+        $this->assertEquals(new Field('product_id', 2, null), $firstDocument->field('product_id'), 'Document field');
+        $this->assertEquals(new Field('bielefeld', null, null), $firstDocument->field('bielefeld'), 'Nonexistent document field');
     }
 
     /**

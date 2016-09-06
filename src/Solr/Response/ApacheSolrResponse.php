@@ -44,14 +44,13 @@ class ApacheSolrResponse implements Response
     }
 
     /**
-     * Returns number of documents
-     *
-     * @return int
+     * @return DocumentCollection
      */
-    public function getDocumentCount()
+    public function documents()
     {
-        return \count($this->apacheSolrResponse->response->docs);
+        return ApacheSolrDocumentCollection::fromApacheSolrResponse($this->apacheSolrResponse);
     }
+
 
     function __get($name)
     {

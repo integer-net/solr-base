@@ -9,12 +9,6 @@
  */
 namespace IntegerNet\Solr\Response;
 
-/**
- * Interface SolrResponse
- *
- * @todo replace Apache_Solr_Response entirely with better abstraction and defined interface
- * @package IntegerNet\Solr\Resource
- */
 interface Response
 {
     /**
@@ -24,19 +18,19 @@ interface Response
      */
     public function getRawResponse();
     /**
-     * Returns number of documents
-     *
-     * @return int
+     * @return DocumentCollection
      */
-    public function getDocumentCount();
+    public function documents();
     /**
+     * Returns new response instance, with merged results from both responses
+     *
      * @param Response $other
      * @param int $pageSize
      * @return Response
      */
     public function merge(Response $other, $pageSize);
     /**
-     * Returns new result with slice from item number $from until item number $from + $length
+     * Returns new response instance with slice from item number $from until item number $from + $length
      *
      * @param $from
      * @param $length
