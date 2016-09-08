@@ -51,6 +51,14 @@ class ApacheSolrResponse implements Response
         return ApacheSolrDocumentCollection::fromApacheSolrResponse($this->apacheSolrResponse);
     }
 
+    /**
+     * @return FacetCollection
+     */
+    public function facets()
+    {
+        return ApacheSolrFacetCollection::fromApacheSolrFacetCounts($this->apacheSolrResponse->facet_counts);
+    }
+
 
     function __get($name)
     {

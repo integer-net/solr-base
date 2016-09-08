@@ -22,6 +22,10 @@ interface Response
      */
     public function documents();
     /**
+     * @return FacetCollection
+     */
+    public function facets();
+    /**
      * Returns new response instance, with merged results from both responses
      *
      * @param Response $other
