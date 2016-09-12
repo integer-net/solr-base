@@ -37,9 +37,10 @@ class AttributeStub implements Attribute
     {
         return new self($name, $name, 0, new SourceStub(), 'string', true, true, 'text', true, 'text');
     }
+
     public static function filterable($name, array $options)
     {
-        return new self($name, $name, 0, new \IntegerNet\SolrSuggest\Plain\Entity\Source($options), 'int', true, false, 'int', false, 'text');
+        return new self($name, $name, 0, new SourceStub($options), 'int', true, false, 'int', false, 'text');
     }
 
     public function __construct($attributeCode, $storeLabel, $solrBoost, Source $source, $backendType, $isSearchable, $usedForSortBy, $facetType, $isSortable, $inputType)
@@ -187,13 +188,24 @@ class AttributeStub implements Attribute
 
 class SourceStub implements Source
 {
+    private $optionMap;
+
+    /**
+     * SourceStub constructor.
+     * @param $optionMap
+     */
+    public function __construct($optionMap = [])
+    {
+        $this->optionMap = $optionMap;
+    }
+
     /**
      * @param int $optionId
      * @return string
      */
     public function getOptionText($optionId)
     {
-        return '';
+        return isset($this->optionMap[$optionId]) ? $this->optionMap[$optionId] : '';
     }
 
     /**
@@ -203,7 +215,7 @@ class SourceStub implements Source
      */
     public function getOptionMap()
     {
-        return array();
+        return $this->optionMap;
     }
 
 }
