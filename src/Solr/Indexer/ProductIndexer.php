@@ -8,6 +8,7 @@
  * @author     Andreas von Studnitz <avs@integer-net.de>
  */
 namespace IntegerNet\Solr\Indexer;
+use IntegerNet\Solr\Implementor\Decorator\CachedAttributeRepository;
 use IntegerNet\Solr\Implementor\PagedProductIterator;
 use IntegerNet\Solr\Implementor\ProductRenderer;
 use IntegerNet\Solr\Implementor\StoreEmulation;
@@ -67,7 +68,7 @@ class ProductIndexer
         $this->_config = $_config;
         $this->_resource = $_resource;
         $this->_eventDispatcher = $_eventDispatcher;
-        $this->_attributeRepository = $_attributeRepository;
+        $this->_attributeRepository = new CachedAttributeRepository($_attributeRepository);
         $this->_categoryRepository = $_categoryRepository;
         $this->_productRepository = $_productRepository;
         $this->_renderer = $_renderer;
