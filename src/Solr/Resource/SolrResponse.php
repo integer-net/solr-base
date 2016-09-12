@@ -16,3 +16,8 @@ use IntegerNet\Solr\Response\Response;
  * autoload real class where alias is defined
  */
 \class_exists(Response::class);
+
+if (false) {
+    /** @deprecated alias for \IntegerNet\Solr\Response\Response */
+    interface SolrResponse extends Response {}
+}

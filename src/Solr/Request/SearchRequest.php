@@ -109,14 +109,14 @@ class SearchRequest implements Request, HasFilter
         } else {
             $result = $this->getResultFromRequest($pageSize, false, $activeFilterAttributeCodes);
 
-            $numberResults = sizeof($result->response->docs);
+            $numberResults = $result->documents()->count();
             if ($isFuzzyActive && (($minimumResults == 0) || ($numberResults < $minimumResults))) {
 
                 $fuzzyResult = $this->getResultFromRequest($pageSize, true, $activeFilterAttributeCodes);
                 $result = $result->merge($fuzzyResult, $pageSize);
             }
 
-            if (sizeof($result->response->docs) == 0) {
+            if ($result->documents()->count() == 0) {
                 $this->foundNoResults = true;
                 $check = explode(' ', $this->queryBuilder->getSearchString()->getRawString());
                 if (count($check) > 1) {
