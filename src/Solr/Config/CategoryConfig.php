@@ -28,15 +28,43 @@ final class CategoryConfig
     private $indexerActive;
 
     /**
+     * @var bool
+     */
+    private $useInSearchResults;
+
+    /**
+     * @var int
+     */
+    private $maxNumberResults;
+
+    /**
+     * @var bool
+     */
+    private $isFuzzyActive;
+
+    /**
+     * @var float
+     */
+    private $fuzzySensitivity;
+
+    /**
      * @param bool $active
      * @param int $filterPosition
      * @param bool $indexerActive
+     * @param bool $useInSearchResults
+     * @param int $maxNumberResults
+     * @param bool $isFuzzyActive
+     * @param float $fuzzySensitivity
      */
-    public function __construct($active, $filterPosition, $indexerActive)
+    public function __construct($active, $filterPosition, $indexerActive, $useInSearchResults, $maxNumberResults, $isFuzzyActive, $fuzzySensitivity)
     {
         $this->active = $active;
         $this->filterPosition = $filterPosition;
         $this->indexerActive = $indexerActive;
+        $this->useInSearchResults = $useInSearchResults;
+        $this->maxNumberResults = $maxNumberResults;
+        $this->isFuzzyActive = $isFuzzyActive;
+        $this->fuzzySensitivity = $fuzzySensitivity;
     }
 
     /**
@@ -61,6 +89,38 @@ final class CategoryConfig
     public function isIndexerActive()
     {
         return $this->indexerActive;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function canUseInSearchResults()
+    {
+        return $this->useInSearchResults;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxNumberResults()
+    {
+        return $this->maxNumberResults;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFuzzyActive()
+    {
+        return $this->isFuzzyActive;
+    }
+
+    /**
+     * @return float
+     */
+    public function getFuzzySensitivity()
+    {
+        return $this->fuzzySensitivity;
     }
 
 }

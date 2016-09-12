@@ -16,11 +16,39 @@ final class CmsConfig
     private $active;
 
     /**
-     * @param bool $active
+     * @var bool
      */
-    public function __construct($active)
+    private $useInSearchResults;
+
+    /**
+     * @var int
+     */
+    private $maxNumberResults;
+
+    /**
+     * @var bool
+     */
+    private $isFuzzyActive;
+
+    /**
+     * @var float
+     */
+    private $fuzzySensitivity;
+
+    /**
+     * @param bool $active
+     * @param bool $useInSearchResults
+     * @param int $maxNumberResults
+     * @param bool $isFuzzyActive
+     * @param float $fuzzySensitivity
+     */
+    public function __construct($active, $useInSearchResults, $maxNumberResults, $isFuzzyActive, $fuzzySensitivity)
     {
         $this->active = $active;
+        $this->useInSearchResults = $useInSearchResults;
+        $this->maxNumberResults = $maxNumberResults;
+        $this->isFuzzyActive = $isFuzzyActive;
+        $this->fuzzySensitivity = $fuzzySensitivity;
     }
 
     /**
@@ -29,6 +57,38 @@ final class CmsConfig
     public function isActive()
     {
         return $this->active;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function canUseInSearchResults()
+    {
+        return $this->useInSearchResults;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxNumberResults()
+    {
+        return $this->maxNumberResults;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFuzzyActive()
+    {
+        return $this->isFuzzyActive;
+    }
+
+    /**
+     * @return float
+     */
+    public function getFuzzySensitivity()
+    {
+        return $this->fuzzySensitivity;
     }
 
 }
