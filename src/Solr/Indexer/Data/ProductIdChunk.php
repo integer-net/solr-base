@@ -16,6 +16,9 @@ final class ProductIdChunk
     /** @var  int[][] */
     private $childrenIds = array();
 
+    /** @var ProductAssociation[] */
+    private $associations = array();
+
     private $size = 0;
 
     /**
@@ -54,6 +57,8 @@ final class ProductIdChunk
      */
     public function addProductIds($parentId, $childrenIds = array())
     {
+        $this->associations[$parentId] = new ProductAssociation($parentId, $childrenIds);
+        //TODO derive all data from keys and values of $this->associations ?
         $this->parentIds[] = $parentId;
         if (sizeof($childrenIds)) {
             $this->childrenIds[$parentId] = $childrenIds;

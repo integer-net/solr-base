@@ -17,4 +17,19 @@ interface PagedProductIterator extends ProductIterator
      * @param callable $callback
      */
     public function setPageCallback($callback);
+
+    /**
+     * @return \IntegerNet\Solr\Indexer\Data\ProductIdChunk
+     */
+    public function currentChunk();
+
+    /**
+     * Returns an iterator for a subset of products. The ids must be part of the current chunk, otherwise an
+     * OutOfBoundsException will be thrown
+     *
+     * @param int[] $ids
+     * @return ProductIterator
+     * @throws \OutOfBoundsException
+     */
+    public function subset($ids);
 }
