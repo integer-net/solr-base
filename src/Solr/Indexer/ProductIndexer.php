@@ -130,7 +130,6 @@ class ProductIndexer
                     $pageSize = 100;
                 }
 
-                $this->productRepository->setPageSizeForIndex($pageSize); //TODO remove if not needed
                 $associations = $this->productRepository->getProductAssociations($productIds);
                 $chunks = ProductIdChunks::withAssociationsTogether(
                     $productIds == null ? $this->productRepository->getAllProductIds() : $productIds,

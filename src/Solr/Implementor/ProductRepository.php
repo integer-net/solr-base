@@ -33,12 +33,4 @@ interface ProductRepository
      */
     public function getProductAssociations($productIds);
 
-    /**
-     * Set maximum number of products to load at once during index
-     *
-     * @param int $pageSize
-     * @return $this
-     */
-    public function setPageSizeForIndex($pageSize);
-
 }
