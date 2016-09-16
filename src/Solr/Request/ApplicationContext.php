@@ -11,6 +11,8 @@ namespace IntegerNet\Solr\Request;
 use IntegerNet\Solr\Config\AutosuggestConfig;
 use IntegerNet\Solr\Config\FuzzyConfig;
 use IntegerNet\Solr\Config\ResultsConfig;
+use IntegerNet\Solr\Config\CategoryConfig;
+use IntegerNet\Solr\Config\CmsConfig;
 use IntegerNet\Solr\Implementor\AttributeRepository;
 use IntegerNet\Solr\Implementor\EventDispatcher;
 use IntegerNet\Solr\Implementor\Pagination;
@@ -41,6 +43,14 @@ final class ApplicationContext
      * @var $autosuggestConfig AutosuggestConfig
      */
     private $autosuggestConfig;
+    /**
+     * @var $categoryConfig CategoryConfig
+     */
+    private $categoryConfig;
+    /**
+     * @var $cmsConfig CmsConfig
+     */
+    private $cmsConfig;
     /**
      * @var $pagination Pagination
      */
@@ -82,6 +92,26 @@ final class ApplicationContext
     public function setFuzzyConfig($fuzzyConfig)
     {
         $this->fuzzyConfig = $fuzzyConfig;
+        return $this;
+    }
+
+    /**
+     * @param CategoryConfig $categoryConfig
+     * @return ApplicationContext
+     */
+    public function setCategoryConfig($categoryConfig)
+    {
+        $this->categoryConfig = $categoryConfig;
+        return $this;
+    }
+
+    /**
+     * @param CmsConfig $cmsConfig
+     * @return ApplicationContext
+     */
+    public function setCmsConfig($cmsConfig)
+    {
+        $this->cmsConfig = $cmsConfig;
         return $this;
     }
 
@@ -130,6 +160,28 @@ final class ApplicationContext
             throw new UnexpectedValueException('ApplicationContext::$fuzzyConfig is not initialized.');
         }
         return $this->fuzzyConfig;
+    }
+
+    /**
+     * @return CategoryConfig
+     */
+    public function getCategoryConfig()
+    {
+        if ($this->categoryConfig === null) {
+            throw new UnexpectedValueException('ApplicationContext::$categoryConfig is not initialized.');
+        }
+        return $this->categoryConfig;
+    }
+
+    /**
+     * @return CmsConfig
+     */
+    public function getCmsConfig()
+    {
+        if ($this->cmsConfig === null) {
+            throw new UnexpectedValueException('ApplicationContext::$cmsConfig is not initialized.');
+        }
+        return $this->cmsConfig;
     }
 
     /**
