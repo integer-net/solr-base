@@ -41,7 +41,8 @@ final class CachedAttributeRepository implements AttributeRepository
     {
         $serializedArgs = \serialize($args);
         if (! isset($this->memoizedResults[$methodName][$serializedArgs])) {
-            $this->memoizedResults[$methodName][$serializedArgs] = $this->attributeRepository->$methodName(...$args);
+            // PHP 5.6+ $this->memoizedResults[$methodName][$serializedArgs] = $this->attributeRepository->$methodName(...$args);
+            $this->memoizedResults[$methodName][$serializedArgs] = \call_user_func_array([$this->attributeRepository, $methodName], $args);
         }
         return $this->memoizedResults[$methodName][$serializedArgs];
     }
