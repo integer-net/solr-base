@@ -9,24 +9,29 @@
  */
 namespace IntegerNet\Solr\Implementor;
 
+use IntegerNet\Solr\Indexer\Data\ProductIdChunks;
+
 interface ProductRepository
 {
     /**
-     * Return product iterator, which should implement lazy loading and allows a callback for batch processing
+     * Return product iterator which may implement lazy loading but must ensure that given chunks are loaded together
      *
-     * @param int $storeId  Products will be returned that are visible in this store and with store specific values
-     * @param null|int[] $productIds filter by product ids
+     * @param int $storeId
+     * @param ProductIdChunks $chunks
      * @return PagedProductIterator
      */
-    public function getProductsForIndex($storeId, $productIds = null);
+    public function getProductsInChunks($storeId, ProductIdChunks $chunks);
 
     /**
-     * Return product iterator for child products
-     *
-     * @param Product $parent The composite parent product. Child products will be returned that are visible in the same store and with store specific values
-     * @return ProductIterator
+     * @return int[]
      */
-    public function getChildProducts(Product $parent);
+    public function getAllProductIds();
+
+    /**
+     * @param null|int[] $productIds
+     * @return \IntegerNet\Solr\Indexer\Data\ProductAssociation[] An array with parent_id as key and association metadata as value
+     */
+    public function getProductAssociations($productIds);
 
     /**
      * Set maximum number of products to load at once during index

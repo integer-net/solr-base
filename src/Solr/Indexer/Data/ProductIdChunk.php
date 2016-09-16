@@ -72,6 +72,6 @@ final class ProductIdChunk
      */
     public function childrenOf($parentId)
     {
-        return $this->childrenIds[$parentId];
+        return isset($this->childrenIds[$parentId]) ? $this->childrenIds[$parentId] : [];
     }
 }

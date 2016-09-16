@@ -11,7 +11,7 @@
 namespace IntegerNet\Solr\Indexer\Data;
 
 
-final class ProductAssociation
+final class ProductAssociation implements \Countable
 {
     /** @var int */
     private $parentId;
@@ -35,6 +35,11 @@ final class ProductAssociation
     public function childrenIds()
     {
         return $this->childrenIds;
+    }
+
+    public function count()
+    {
+        return \count($this->childrenIds());
     }
 
 }

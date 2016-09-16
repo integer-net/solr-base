@@ -12,6 +12,8 @@ use IntegerNet\Solr\Implementor\Decorator\CachedAttributeRepository;
 use IntegerNet\Solr\Implementor\PagedProductIterator;
 use IntegerNet\Solr\Implementor\ProductRenderer;
 use IntegerNet\Solr\Implementor\StoreEmulation;
+use IntegerNet\Solr\Indexer\Data\ProductAssociation;
+use IntegerNet\Solr\Indexer\Data\ProductIdChunks;
 use IntegerNet\Solr\Resource\ResourceFacade;
 use IntegerNet\Solr\Implementor\Config;
 use IntegerNet\Solr\Implementor\EventDispatcher;
@@ -43,7 +45,7 @@ class ProductIndexer
     /** @var  IndexCategoryRepository */
     private $_categoryRepository;
     /** @var  ProductRepository */
-    private $_productRepository;
+    private $productRepository;
     /** @var  ProductRenderer */
     private $_renderer;
     /** @var StoreEmulation */
@@ -70,7 +72,7 @@ class ProductIndexer
         $this->_eventDispatcher = $_eventDispatcher;
         $this->_attributeRepository = new CachedAttributeRepository($_attributeRepository);
         $this->_categoryRepository = $_categoryRepository;
-        $this->_productRepository = $_productRepository;
+        $this->productRepository = $_productRepository;
         $this->_renderer = $_renderer;
         $this->storeEmulation = $storeEmulation;
     }
@@ -128,8 +130,14 @@ class ProductIndexer
                     $pageSize = 100;
                 }
 
-                $productIterator = $this->_productRepository->setPageSizeForIndex($pageSize)->getProductsForIndex($storeId, $productIds);
-                $this->_indexProductCollection($emptyIndex, $productIterator, $storeId, $productIds);
+                $this->productRepository->setPageSizeForIndex($pageSize); //TODO remove if not needed
+                $associations = $this->productRepository->getProductAssociations($productIds);
+                $chunks = ProductIdChunks::withAssociationsTogether(
+                    $productIds == null ? $this->productRepository->getAllProductIds() : $productIds,
+                    $associations,
+                    $pageSize);
+                $productIterator = $this->productRepository->getProductsInChunks($storeId, $chunks);
+                $this->_indexProductCollection($emptyIndex, $productIterator, $storeId, $productIds, $associations);
 
                 $this->_getResource()->setUseSwapIndex(false);
             } catch (\Exception $e) {
@@ -170,9 +178,10 @@ class ProductIndexer
      * Generate single product data for Solr
      *
      * @param Product $product
+     * @param ProductIterator $children
      * @return IndexDocument
      */
-    protected function _getProductData(Product $product)
+    protected function _getProductData(Product $product, ProductIterator $children)
     {
         $categoryIds = $this->_categoryRepository->getCategoryIds($product);
         $productData = new IndexDocument(array(
@@ -189,9 +198,9 @@ class ProductIndexer
 
         $this->_addBoostToProductData($product, $productData);
 
-        $this->_addFacetsToProductData($product, $productData);
+        $this->_addFacetsToProductData($product, $productData, $children);
 
-        $this->_addSearchDataToProductData($product, $productData);
+        $this->_addSearchDataToProductData($product, $productData, $children);
 
         $this->_addSortingDataToProductData($product, $productData);
 
@@ -233,8 +242,9 @@ class ProductIndexer
     /**
      * @param Product $product
      * @param IndexDocument $productData
+     * @param ProductIterator $children
      */
-    protected function _addFacetsToProductData(Product $product, IndexDocument $productData)
+    protected function _addFacetsToProductData(Product $product, IndexDocument $productData, ProductIterator $children)
     {
         foreach ($this->_attributeRepository->getFilterableInCatalogOrSearchAttributes($product->getStoreId()) as $attribute) {
 
@@ -279,16 +289,9 @@ class ProductIndexer
                 }
             }
 
-            $hasChildProducts = true;
-            try {
-                $childProducts = $this->_getChildProductsCollection($product);
-            } catch (\Exception $e) {
-                $hasChildProducts = false;
-            }
+            if ($attribute->getBackendType() != Attribute::BACKEND_TYPE_DECIMAL) {
 
-            if ($hasChildProducts && $attribute->getBackendType() != Attribute::BACKEND_TYPE_DECIMAL) {
-
-                foreach($childProducts as $childProduct) {
+                foreach($children as $childProduct) {
                     /** @var $childProduct Product */
                     if ($childValues = $childProduct->getAttributeValue($attribute)
                     ) {
@@ -335,15 +338,10 @@ class ProductIndexer
     /**
      * @param Product $product
      * @param IndexDocument $productData
+     * @param ProductIterator $children
      */
-    protected function _addSearchDataToProductData(Product $product, IndexDocument $productData)
+    protected function _addSearchDataToProductData(Product $product, IndexDocument $productData, ProductIterator $children)
     {
-        $hasChildProducts = true;
-        try {
-            $childProducts = $this->_getChildProductsCollection($product);
-        } catch (\Exception $e) {
-            $hasChildProducts = false;
-        }
 
         if (!$productData->getData('price_f')) {
             $productData->setData('price_f', 0.00);
@@ -376,9 +374,9 @@ class ProductIndexer
                 }
             }
 
-            if ($hasChildProducts && $attribute->getBackendType() != Attribute::BACKEND_TYPE_DECIMAL) {
+            if ($attribute->getBackendType() != Attribute::BACKEND_TYPE_DECIMAL) {
 
-                foreach($childProducts as $childProduct) {
+                foreach($children as $childProduct) {
                     /** @var $childProduct Product */
                     if ($childProduct->getAttributeValue($attribute)
                         && $childValue = $childProduct->getSearchableAttributeValue($attribute)
@@ -481,22 +479,14 @@ class ProductIndexer
     }
 
     /**
-     * @param Product $product
-     * @return ProductIterator
-     */
-    protected function _getChildProductsCollection($product)
-    {
-        return $this->_productRepository->getChildProducts($product);
-    }
-
-    /**
      * @param boolean $emptyIndex
      * @param PagedProductIterator $productIterator
-     * @param int[] $productIds
      * @param int $storeId
+     * @param int[] $productIds
+     * @param ProductAssociation[] $associations
      * @return int
      */
-    protected function _indexProductCollection($emptyIndex, PagedProductIterator $productIterator, $storeId, $productIds = array())
+    protected function _indexProductCollection($emptyIndex, PagedProductIterator $productIterator, $storeId, $productIds, $associations)
     {
         $idsForDeletion = array();
         $documentQueue = new IndexDocumentQueue($this->_resource, $storeId);
@@ -508,7 +498,8 @@ class ProductIndexer
                 unset($productIds[$product->getId()]);
             }
             if ($product->isIndexable()) {
-                $documentQueue->add($this->_getProductData($product));
+                $childrenIds = isset($associations[$product->getId()]) ? $associations[$product->getId()]->childrenIds() : [];
+                $documentQueue->add($this->_getProductData($product, $productIterator->subset($childrenIds)));
             } else {
                 $idsForDeletion[] = $this->_getSolrId($product);
             }
