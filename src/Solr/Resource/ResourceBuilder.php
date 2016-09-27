@@ -57,16 +57,21 @@ class ResourceBuilder
         $service = new ServiceBase(
             $this->host, $this->port, $this->path,
             $this->httpTransportAdapter, $this->compatibilityLayer, $this->useHttps);
-        $service->appendService(new ServiceCategories(
-                $this->host, $this->port, $this->path,
-                $this->httpTransportAdapter, $this->compatibilityLayer, $this->useHttps)
-        );
-        $service->appendService(new ServiceSuggest(
-                $this->host, $this->port, $this->path,
-                $this->httpTransportAdapter, $this->compatibilityLayer, $this->useHttps)
-        );
+        if (@class_exists('ServiceCategories')) {
+            $service->appendService(new ServiceCategories(
+                    $this->host, $this->port, $this->path,
+                    $this->httpTransportAdapter, $this->compatibilityLayer, $this->useHttps)
+            );
+        }
+        if (@class_exists('ServiceSuggest')) {
+            $service->appendService(new ServiceSuggest(
+                    $this->host, $this->port, $this->path,
+                    $this->httpTransportAdapter, $this->compatibilityLayer, $this->useHttps)
+            );
+        }
         return $service;
     }
+    
     /**
      * Returns new instance with default values for method chaining
      *
