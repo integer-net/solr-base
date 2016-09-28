@@ -109,10 +109,10 @@ class ApacheSolrResponse implements Response
                 /* @var $fuzzyDoc \Apache_Solr_Document */
                 $field = $fuzzyDoc->getField('product_id');
                 if (!in_array($field['value'], $foundProductIds)) {
-                    $this->response->docs[] = $fuzzyDoc;
-                    if (++$numberResults >= $pageSize) {
-                        break;
+                    if ($numberResults++ >= $pageSize) {
+                        continue;
                     }
+                    $this->response->docs[] = $fuzzyDoc;
                 } else {
                     $numberDuplicates++;
                 }
