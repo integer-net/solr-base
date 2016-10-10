@@ -19,7 +19,7 @@ use IntegerNet\Solr\Query\ParamsBuilder;
 use IntegerNet\Solr\Query\SearchParamsBuilder;
 use IntegerNet\Solr\Query\SearchQueryBuilder;
 use IntegerNet\Solr\Resource\ResourceFacade;
-use IntegerNet\Solr\Response\Response as SolrResponse;
+use IntegerNet\Solr\Resource\SolrResponse;
 use IntegerNet\Solr\Resource\LoggerDecorator;
 use Psr\Log\LoggerInterface;
 
@@ -107,16 +107,16 @@ class SearchRequest implements Request, HasFilter
             $result = $this->getResultFromRequest($pageSize, $isFuzzyActive, $activeFilterAttributeCodes);
             return $this->sliceResult($result);
         } else {
-            $result = $this->getResultFromRequest($pageSize, false, $activeFilterAttributeCodes);
+            $result = $this->getResultFromRequest(99999, false, $activeFilterAttributeCodes);
 
-            $numberResults = $result->documents()->count();
+            $numberResults = sizeof($result->response->docs);
             if ($isFuzzyActive && (($minimumResults == 0) || ($numberResults < $minimumResults))) {
 
-                $fuzzyResult = $this->getResultFromRequest($pageSize, true, $activeFilterAttributeCodes);
+                $fuzzyResult = $this->getResultFromRequest(99999, true, $activeFilterAttributeCodes);
                 $result = $result->merge($fuzzyResult, $pageSize);
             }
 
-            if ($result->documents()->count() == 0) {
+            if (sizeof($result->response->docs) == 0) {
                 $this->foundNoResults = true;
                 $check = explode(' ', $this->queryBuilder->getSearchString()->getRawString());
                 if (count($check) > 1) {
@@ -138,9 +138,7 @@ class SearchRequest implements Request, HasFilter
     {
         $pageSize = $this->getParamsBuilder()->getPageSize();
         $firstItemNumber = ($this->getParamsBuilder()->getCurrentPage() - 1) * $pageSize;
-        if ($firstItemNumber > 0) {
-            $result->slice($firstItemNumber, $pageSize);
-        }
+        $result->slice($firstItemNumber, $pageSize);
         return $result;
     }
     /**

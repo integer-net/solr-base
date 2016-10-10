@@ -37,9 +37,9 @@ class ResourceFacade
     private $resourceBuilder;
 
     /**
-     * Solr service, by store id
+     * Solr service, by store id and swap (yes/no)
      *
-     * @var ServiceBase[]
+     * @var ServiceBase[][]
      */
     protected $_solr;
 
@@ -82,16 +82,16 @@ class ResourceFacade
      */
     public function getSolrService($storeId)
     {
-        if (!isset($this->_solr[$storeId])) {
+        if (!isset($this->_solr[$storeId][(int)$this->_useSwapIndex])) {
 
             if (intval(ini_get('default_socket_timeout')) < 300) {
                 ini_set('default_socket_timeout', 300);
             }
 
             $serverConfig = $this->getStoreConfig($storeId)->getServerConfig();
-            $this->_solr[$storeId] = $this->resourceBuilder->withConfig($serverConfig, $this->_useSwapIndex)->build();
+            $this->_solr[$storeId][(int)$this->_useSwapIndex] = $this->resourceBuilder->withConfig($serverConfig, $this->_useSwapIndex)->build();
         }
-        return $this->_solr[$storeId];
+        return $this->_solr[$storeId][(int)$this->_useSwapIndex];
     }
 
     /**
@@ -100,7 +100,8 @@ class ResourceFacade
      */
     public function setSolrService($storeId, $service)
     {
-        $this->_solr[$storeId] = $service;
+        $this->_solr[$storeId][0] = $service;
+        $this->_solr[$storeId][1] = $service;
     }
 
     /**
