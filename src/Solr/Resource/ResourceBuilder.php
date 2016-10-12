@@ -57,13 +57,13 @@ class ResourceBuilder
         $service = new ServiceBase(
             $this->host, $this->port, $this->path,
             $this->httpTransportAdapter, $this->compatibilityLayer, $this->useHttps);
-        if (@class_exists('ServiceCategories')) {
+        if (@class_exists(ServiceCategories::class)) {
             $service->appendService(new ServiceCategories(
                     $this->host, $this->port, $this->path,
                     $this->httpTransportAdapter, $this->compatibilityLayer, $this->useHttps)
             );
         }
-        if (@class_exists('ServiceSuggest')) {
+        if (@class_exists(ServiceSuggest::class)) {
             $service->appendService(new ServiceSuggest(
                     $this->host, $this->port, $this->path,
                     $this->httpTransportAdapter, $this->compatibilityLayer, $this->useHttps)
@@ -71,7 +71,6 @@ class ResourceBuilder
         }
         return $service;
     }
-    
     /**
      * Returns new instance with default values for method chaining
      *
@@ -207,6 +206,4 @@ class ResourceBuilder
         $this->useHttps = $useHttps;
         return $this;
     }
-    
-    
 }
