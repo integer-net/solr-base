@@ -25,6 +25,7 @@ use Psr\Log\LoggerInterface;
 
 class SearchRequest implements Request, HasFilter
 {
+    const PAGESIZE_ALL = 99999;
     /**
      * @var $resource ResourceFacade
      */
@@ -103,20 +104,18 @@ class SearchRequest implements Request, HasFilter
         $pageSize = $this->getParamsBuilder()->getPageSize() * $this->getParamsBuilder()->getCurrentPage();
         $isFuzzyActive = $this->fuzzyConfig->isActive();
         $minimumResults = $this->fuzzyConfig->getMinimumResults();
-        if ($this->getCurrentSort() != 'position') {
+        if ($this->getCurrentSort() !== 'position') {
             $result = $this->getResultFromRequest($pageSize, $isFuzzyActive, $activeFilterAttributeCodes);
             return $this->sliceResult($result);
         } else {
-            $result = $this->getResultFromRequest(99999, false, $activeFilterAttributeCodes);
-
-            $numberResults = sizeof($result->response->docs);
+            $result = $this->getResultFromRequest($isFuzzyActive ? self::PAGESIZE_ALL : $pageSize, false, $activeFilterAttributeCodes);
+            $numberResults = $result->documents()->count() ;
             if ($isFuzzyActive && (($minimumResults == 0) || ($numberResults < $minimumResults))) {
 
-                $fuzzyResult = $this->getResultFromRequest(99999, true, $activeFilterAttributeCodes);
+                $fuzzyResult = $this->getResultFromRequest(self::PAGESIZE_ALL, true, $activeFilterAttributeCodes);
                 $result = $result->merge($fuzzyResult, $pageSize);
             }
-
-            if (sizeof($result->response->docs) == 0) {
+            if ($result->documents()->count() === 0) {
                 $this->foundNoResults = true;
                 $check = explode(' ', $this->queryBuilder->getSearchString()->getRawString());
                 if (count($check) > 1) {
