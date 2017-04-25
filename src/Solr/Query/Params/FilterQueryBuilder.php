@@ -132,12 +132,26 @@ class FilterQueryBuilder
     }
 
     /**
-     * @param float $minPrice
-     * @param float $maxPrice
+     * @param float|float[] $minPrice
+     * @param float|float[] $maxPrice
      * @return $this
+     * @throws \Exception
      */
     public function addPriceRangeFilterByMinMax($minPrice, $maxPrice = 0.0)
     {
+        if (is_array($minPrice) && is_array($maxPrice)) {
+            if (sizeof($minPrice) != sizeof($maxPrice)) {
+                throw new \Exception('Arrays of min and max prices must be of same size.');
+            }
+            foreach($minPrice as $index => $void) {
+
+                $this->addPriceRangeFilterByMinMax($minPrice[$index], $maxPrice[$index]);
+            }
+            return $this;
+        }
+        if (!is_numeric($minPrice)) {
+            return $this;
+        }
         if ($maxPrice) {
             $this->_addFilter('price_f', sprintf('[%f TO %f]', $minPrice, $maxPrice));
         } else {
