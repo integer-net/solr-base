@@ -30,10 +30,15 @@ final class SearchString
         return $this->rawString;
     }
 
+    /**
+     * Remove spaces before numbers in order to avoid search errors
+     *
+     * @return string
+     */
     public function getEscapedString()
     {
         if ($this->escapedString === null) {
-            $this->escapedString = $this->escape($this->getRawString());
+            $this->escapedString = preg_replace('/\s([0-9])/', '$1', $this->escape($this->getRawString()));
         }
         return $this->escapedString;
     }
