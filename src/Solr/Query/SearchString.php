@@ -38,7 +38,7 @@ final class SearchString
     public function getEscapedString()
     {
         if ($this->escapedString === null) {
-            $this->escapedString = preg_replace('/\s([0-9])/', '$1', $this->escape($this->getRawString()));
+            $this->escapedString = preg_replace(['/\s+([0-9])/','/\s+/'], ['$1', ' '], $this->escape($this->getRawString()));
         }
         return $this->escapedString;
     }
