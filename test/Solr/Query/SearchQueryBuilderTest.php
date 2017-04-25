@@ -91,6 +91,10 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
                 FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig), $defaultPagination, new SearchString('foo bar'),
                 new Query($defaultStoreId, 'foo bar~0.7', 0, PaginationStub::DEFAULT_PAGESIZE, $defaultExpectedParams)
             ],
+            'default_numbers' => [$defaultStoreId, $defaultResultConfig, FuzzyConfigBuilder::defaultConfig()->build(),
+                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig), $defaultPagination, new SearchString('foo 1 bar 2'),
+                new Query($defaultStoreId, 'foo1 bar2~0.7', 0, PaginationStub::DEFAULT_PAGESIZE, $defaultExpectedParams)
+            ],
             'alternative' => [1, ResultConfigBuilder::alternativeConfig()->build(), FuzzyConfigBuilder::inactiveConfig()->build(),
                 FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig), PaginationStub::alternativePagination(), new SearchString('"foo bar"'),
                 new Query(1, 'attribute1_t:""foo bar""~100^0 OR attribute2_t:""foo bar""~100^0 OR category_name_t_mv:""foo bar""~100^1', 0, 24, [
