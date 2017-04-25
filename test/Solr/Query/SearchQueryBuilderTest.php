@@ -66,7 +66,7 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
         $defaultPagination = PaginationStub::defaultPagination();
         $defaultExpectedParams = [
             'q.op' => ResultsConfig::SEARCH_OPERATOR_AND,
-            'fq' => "store_id:$defaultStoreId AND is_visible_in_search_i:1",
+            'fq' => "content_type:product AND store_id:$defaultStoreId AND is_visible_in_search_i:1",
             'fl' => 'result_html_list_nonindex,result_html_grid_nonindex,score,sku_s,name_s,product_id',
             'sort' => 'score desc',
             'facet' => 'true',
@@ -95,7 +95,7 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
                 FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig), PaginationStub::alternativePagination(), new SearchString('"foo bar"'),
                 new Query(1, 'attribute1_t:""foo bar""~100^0 OR attribute2_t:""foo bar""~100^0 OR category_name_t_mv:""foo bar""~100^1', 0, 24, [
                         'q.op' => ResultsConfig::SEARCH_OPERATOR_OR,
-                        'fq' => "store_id:1 AND is_visible_in_search_i:1",
+                        'fq' => "content_type:product AND store_id:1 AND is_visible_in_search_i:1",
                         'sort' => 'attribute1_s desc',
                         'f.price_f.facet.interval.set' => [
                             "(0.000000,10.000000]", "(10.000000,20.000000]", "(20.000000,50.000000]", "(50.000000,100.000000]", "(100.000000,200.000000]",
@@ -111,7 +111,7 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
                     ->addPriceRangeFilterByMinMax(13,37),
                 $defaultPagination, new SearchString('foo bar'),
                 new Query($defaultStoreId, 'foo bar~0.7', 0, PaginationStub::DEFAULT_PAGESIZE, [
-                        'fq' => 'store_id:0 AND is_visible_in_search_i:1 AND attribute1_facet:blue AND category:42 AND price_f:[13.000000 TO 37.000000]'
+                        'fq' => 'content_type:product AND store_id:0 AND is_visible_in_search_i:1 AND attribute1_facet:blue AND category:42 AND price_f:[13.000000 TO 37.000000]'
                     ] + $defaultExpectedParams)
             ]
         ];
