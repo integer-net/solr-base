@@ -153,7 +153,7 @@ class FilterQueryBuilder
      */
     public function buildFilterQuery($storeId, $attributeToReset = '')
     {
-            $filterQuery = 'store_id:' . $storeId;
+            $filterQuery = 'content_type:product AND store_id:' . $storeId;
             if ($this->isCategoryPage) {
                 $filterQuery .= ' AND is_visible_in_catalog_i:1';
             } else {
