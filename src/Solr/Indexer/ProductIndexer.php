@@ -93,13 +93,15 @@ class ProductIndexer
      * @param array|null $productIds Restrict to given Products if this is set
      * @param boolean|string $emptyIndex Whether to truncate the index before refilling it
      * @param null|int[] $restrictToStoreIds
+     * @param null|int $sliceId
+     * @param null|int $totalNumberSlices
      * @throws \Exception
      * @throws \IntegerNet\Solr\Exception
      */
-    public function reindex($productIds = null, $emptyIndex = false, $restrictToStoreIds = null)
+    public function reindex($productIds = null, $emptyIndex = false, $restrictToStoreIds = null, $sliceId = null, $totalNumberSlices = null)
     {
-        if (is_null($productIds)) {
-            $this->_getResource()->checkSwapCoresConfiguration($restrictToStoreIds);
+        if (is_null($productIds) && is_null($sliceId)) {
+            $this->checkSwapCoresConfiguration($restrictToStoreIds);
         }
 
         foreach($this->_config as $storeId => $storeConfig) {
@@ -114,15 +116,15 @@ class ProductIndexer
             $this->storeEmulation->start($storeId);
             try {
 
-                if (is_null($productIds) && $storeConfig->getIndexingConfig()->isSwapCores()) {
-                    $this->_getResource()->setUseSwapIndex();
+                if (is_null($productIds) && is_null($sliceId) && $storeConfig->getIndexingConfig()->isSwapCores()) {
+                    $this->activateSwapCore();
                 }
 
                 if (
-                    ($emptyIndex && $storeConfig->getIndexingConfig()->isDeleteDocumentsBeforeIndexing())
+                    ($emptyIndex && is_null($sliceId) && $storeConfig->getIndexingConfig()->isDeleteDocumentsBeforeIndexing())
                     || $emptyIndex === 'force'
                 ) {
-                    $this->_getResource()->deleteAllDocuments($storeId, self::CONTENT_TYPE);
+                    $this->clearIndex($storeId);
                 }
 
                 $pageSize = intval($storeConfig->getIndexingConfig()->getPagesize());
@@ -130,15 +132,19 @@ class ProductIndexer
                     $pageSize = 100;
                 }
 
+                if ($productIds == null) {
+                    $productIds = $this->productRepository->getAllProductIds($sliceId, $totalNumberSlices);
+                }
+
                 $associations = $this->productRepository->getProductAssociations($productIds);
                 $chunks = ProductIdChunks::withAssociationsTogether(
-                    $productIds == null ? $this->productRepository->getAllProductIds() : $productIds,
+                    $productIds,
                     $associations,
                     $pageSize);
                 $productIterator = $this->productRepository->getProductsInChunks($storeId, $chunks);
                 $this->_indexProductCollection($emptyIndex, $productIterator, $storeId, $productIds, $associations);
 
-                $this->_getResource()->setUseSwapIndex(false);
+                $this->deactivateSwapCore();
             } catch (\Exception $e) {
                 $this->storeEmulation->stop();
                 throw $e;
@@ -146,8 +152,8 @@ class ProductIndexer
             $this->storeEmulation->stop();
         }
 
-        if (is_null($productIds)) {
-            $this->_getResource()->swapCores($restrictToStoreIds);
+        if (is_null($productIds) && is_null($sliceId)) {
+            $this->swapCores($restrictToStoreIds);
         }
     }
 
@@ -512,6 +518,40 @@ class ProductIndexer
             $this->_getResource()->deleteByMultipleIds($storeId, $idsForDeletion);
         }
         return $storeId;
+    }
+
+    /**
+     * @param $storeId
+     */
+    public function clearIndex($storeId)
+    {
+        $this->_getResource()->deleteAllDocuments($storeId, self::CONTENT_TYPE);
+    }
+
+    public function activateSwapCore()
+    {
+        $this->_getResource()->setUseSwapIndex();
+    }
+
+    public function deactivateSwapCore()
+    {
+        $this->_getResource()->setUseSwapIndex(false);
+    }
+
+    /**
+     * @param null|int[] $restrictToStoreIds
+     */
+    public function swapCores($restrictToStoreIds)
+    {
+        $this->_getResource()->swapCores($restrictToStoreIds);
+    }
+
+    /**
+     * @param $restrictToStoreIds
+     */
+    public function checkSwapCoresConfiguration($restrictToStoreIds)
+    {
+        return $this->_getResource()->checkSwapCoresConfiguration($restrictToStoreIds);
     }
 
 
