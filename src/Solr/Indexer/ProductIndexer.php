@@ -146,7 +146,9 @@ class ProductIndexer
                 $productIterator = $this->productRepository->getProductsInChunks($storeId, $chunks);
                 $this->_indexProductCollection($emptyIndex, $productIterator, $storeId, $productIdsToIndex, $associations);
 
-                $this->deactivateSwapCore();
+                if (is_null($productIds) && is_null($sliceId) && $storeConfig->getIndexingConfig()->isSwapCores()) {
+                    $this->deactivateSwapCore();
+                }
             } catch (\Exception $e) {
                 $this->storeEmulation->stop();
                 throw $e;
