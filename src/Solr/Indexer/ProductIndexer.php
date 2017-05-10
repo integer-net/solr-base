@@ -133,16 +133,18 @@ class ProductIndexer
                 }
 
                 if ($productIds == null) {
-                    $productIds = $this->productRepository->getAllProductIds($sliceId, $totalNumberSlices);
+                    $productIdsToIndex = $this->productRepository->getAllProductIds($sliceId, $totalNumberSlices);
+                } else {
+                    $productIdsToIndex = $productIds;
                 }
 
-                $associations = $this->productRepository->getProductAssociations($productIds);
+                $associations = $this->productRepository->getProductAssociations($productIdsToIndex);
                 $chunks = ProductIdChunks::withAssociationsTogether(
-                    $productIds,
+                    $productIdsToIndex,
                     $associations,
                     $pageSize);
                 $productIterator = $this->productRepository->getProductsInChunks($storeId, $chunks);
-                $this->_indexProductCollection($emptyIndex, $productIterator, $storeId, $productIds, $associations);
+                $this->_indexProductCollection($emptyIndex, $productIterator, $storeId, $productIdsToIndex, $associations);
 
                 $this->deactivateSwapCore();
             } catch (\Exception $e) {
