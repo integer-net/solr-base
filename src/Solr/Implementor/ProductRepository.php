@@ -23,9 +23,11 @@ interface ProductRepository
     public function getProductsInChunks($storeId, ProductIdChunks $chunks);
 
     /**
+     * @param null|int $sliceId
+     * @param null|int $totalNumberSlices
      * @return int[]
      */
-    public function getAllProductIds();
+    public function getAllProductIds($sliceId = null, $totalNumberSlices = null);
 
     /**
      * @param null|int[] $productIds
