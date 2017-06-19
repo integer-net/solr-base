@@ -32,13 +32,15 @@ final class SearchString
 
     /**
      * Remove spaces before numbers in order to avoid search errors
+     * Remove all dashes
      *
      * @return string
      */
     public function getEscapedString()
     {
         if ($this->escapedString === null) {
-            $this->escapedString = preg_replace(['/\s+([0-9])/','/\s+/'], ['$1', ' '], $this->escape($this->getRawString()));
+            $this->escapedString = str_replace('-', ' ', $this->escape($this->getRawString()));
+            $this->escapedString = preg_replace(['/\s+([0-9])/','/\s+/'], ['$1', ' '], $this->escapedString);
         }
         return $this->escapedString;
     }
