@@ -11,7 +11,7 @@ namespace IntegerNet\Solr\Util;
 
 class Version
 {
-    const VERSION = '2.0.0';
+    const VERSION = '3.0.0';
 
     static public function getVersion()
     {

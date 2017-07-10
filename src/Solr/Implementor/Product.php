@@ -48,4 +48,6 @@ interface Product
     public function getSearchableAttributeValue(Attribute $attribute);
 
     public function getCategoryIds();
+
+    public function isInStock();
 }

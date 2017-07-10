@@ -148,9 +148,15 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
      * @param string $attributeToReset
      * @return string
      */
-    private function getFilterQuery($attributeToReset = '')
+    protected function getFilterQuery($attributeToReset = '')
     {
-        return $this->filterQueryBuilder->buildFilterQuery($this->getStoreId(), $attributeToReset);
+        $filterQuery = $this->filterQueryBuilder->buildFilterQuery($this->getStoreId(), $attributeToReset);
+
+        if (!$this->resultsConfig->isShowOutOfStock()) {
+            $filterQuery .= ' AND -is_in_stock_i:0';
+        }
+
+        return $filterQuery;
     }
 
     /**
