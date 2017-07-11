@@ -17,6 +17,10 @@ class CmsConfigBuilder
      * Default values
      */
     private $active = false;
+    private $useInSearchResults = true;
+    private $maxNumberResults = 10;
+    private $isFuzzyActive = true;
+    private $fuzzySensitivity = 0.8;
 
     private function __construct()
     {
@@ -28,6 +32,7 @@ class CmsConfigBuilder
 
    public function build()
     {
-        return new CmsConfig($this->active);
+        return new CmsConfig($this->active, $this->useInSearchResults, $this->maxNumberResults, $this->isFuzzyActive,
+            $this->fuzzySensitivity);
     }
 }
