@@ -16,9 +16,14 @@ class CategoryConfigBuilder
     /*
      * Default values
      */
-    private $active = false,
-        $filterPosition = CategoryConfig::FILTER_POSITION_DEFAULT,
-        $indexerActive = false;
+    private $active = false;
+    private $filterPosition = CategoryConfig::FILTER_POSITION_DEFAULT;
+    private $indexerActive = false;
+    private $useInSearchResults = true;
+    private $maxNumberResults = 3;
+    private $isFuzzyActive = true;
+    private $fuzzySensitivity = 0.8;
+    private $showOutOfStock = true;
 
     private function __construct()
     {
@@ -60,6 +65,7 @@ class CategoryConfigBuilder
 
     public function build()
     {
-        return new CategoryConfig($this->active, $this->filterPosition, $this->indexerActive);
+        return new CategoryConfig($this->active, $this->filterPosition, $this->indexerActive, $this->useInSearchResults,
+            $this->maxNumberResults, $this->isFuzzyActive, $this->fuzzySensitivity, $this->showOutOfStock);
     }
 }

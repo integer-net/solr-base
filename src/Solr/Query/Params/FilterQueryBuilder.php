@@ -7,6 +7,7 @@
  * @copyright  Copyright (c) 2015 integer_net GmbH (http://www.integer-net.de/)
  * @author     Fabian Schmengler <fs@integer-net.de>
  */
+
 namespace IntegerNet\Solr\Query\Params;
 
 use IntegerNet\Solr\Config\ResultsConfig;
@@ -22,6 +23,10 @@ class FilterQueryBuilder
      * @var $isCategoryPage bool
      */
     private $isCategoryPage = false;
+    /**
+     * @var $showOutOfStock bool
+     */
+    private $showOutOfStockProducts = false;
     /**
      * @var $filters array
      */
@@ -48,14 +53,23 @@ class FilterQueryBuilder
         return $this->resultsConfig;
     }
 
-
     /**
-     * @param $isCategoryPage
+     * @param bool $isCategoryPage
      * @return $this
      */
     public function setIsCategoryPage($isCategoryPage)
     {
         $this->isCategoryPage = $isCategoryPage;
+        return $this;
+    }
+
+    /**
+     * @param bool $showOutOfStockProducts
+     * @return $this
+     */
+    public function setShowOutOfStockProducts($showOutOfStockProducts)
+    {
+        $this->showOutOfStockProducts = $showOutOfStockProducts;
         return $this;
     }
 
@@ -155,7 +169,7 @@ class FilterQueryBuilder
         if ($maxPrice) {
             $this->_addFilter('price_f', sprintf('[%f TO %f]', $minPrice, $maxPrice));
         } else {
-            $this->_addFilter('price_f',sprintf('[%f TO *]', $minPrice));
+            $this->_addFilter('price_f', sprintf('[%f TO *]', $minPrice));
         }
         return $this;
     }
@@ -167,29 +181,33 @@ class FilterQueryBuilder
      */
     public function buildFilterQuery($storeId, $attributeToReset = '')
     {
-            $filterQuery = 'content_type:product AND store_id:' . $storeId;
-            if ($this->isCategoryPage) {
-                $filterQuery .= ' AND is_visible_in_catalog_i:1';
-            } else {
-                $filterQuery .= ' AND is_visible_in_search_i:1';
-            }
+        $filterQuery = 'content_type:product AND store_id:' . $storeId;
+        if ($this->isCategoryPage) {
+            $filterQuery .= ' AND is_visible_in_catalog_i:1';
+        } else {
+            $filterQuery .= ' AND is_visible_in_search_i:1';
+        }
 
-            foreach($this->filters as $attributeCode => $value) {
-                if ($attributeCode == $attributeToReset) {
-                    continue;
-                }
-                if (is_array($value)) {
-                    $filterQuery .= ' AND (';
-                    $filterQueryParts = array();
-                    foreach($value as $singleValue) {
-                        $filterQueryParts[] = $attributeCode . ':' . $singleValue;
-                    }
-                    $filterQuery .= implode(' OR ', $filterQueryParts);
-                    $filterQuery .= ')';
-                } else {
-                    $filterQuery .= ' AND ' . $attributeCode . ':' . $value;
-                }
+        foreach ($this->filters as $attributeCode => $value) {
+            if ($attributeCode == $attributeToReset) {
+                continue;
             }
+            if (is_array($value)) {
+                $filterQuery .= ' AND (';
+                $filterQueryParts = array();
+                foreach ($value as $singleValue) {
+                    $filterQueryParts[] = $attributeCode . ':' . $singleValue;
+                }
+                $filterQuery .= implode(' OR ', $filterQueryParts);
+                $filterQuery .= ')';
+            } else {
+                $filterQuery .= ' AND ' . $attributeCode . ':' . $value;
+            }
+        }
+
+        if (!$this->showOutOfStockProducts) {
+            $filterQuery .= ' AND -is_in_stock_i:0';
+        }
 
         return $filterQuery;
     }

@@ -29,12 +29,12 @@ class SearchStringTest extends PHPUnit_Framework_TestCase
         // list taken from http://lucene.apache.org/core/4_4_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description
         // which mentions: + - && || ! ( ) { } [ ] ^ " ~ * ? : \ /
         // of which we escape: ( ) { } [ ] ^ " ~ : \ /
-        // and explicitly don't escape: + - && || ! * ?
+        // and explicitly don't escape: + && || ! * ?
         return [
             'single_word' => ['foo', 'foo'],
             'operators' => ['foo +bar', 'foo +bar'],
-            'all_special' => ['+ - && || ! ( ) { } [ ] ^ " ~ * ? : \\ /',
-                '+ - && || ! \( \) \{ \} \[ \] \^ \" \~ * ? \: \\\\ \/'],
+            'all_special' => ['+ && || ! ( ) { } [ ] ^ " ~ * ? : \\ /',
+                '+ && || ! \( \) \{ \} \[ \] \^ \" \~ * ? \: \\\\ \/'],
             'phrase' => ['"multiple words (quoted, can contain "quotes" or \\(escaped\\) characters)"',
                 '"multiple words (quoted, can contain \\"quotes\\" or \\\\(escaped\\\\) characters)"'],
         ];

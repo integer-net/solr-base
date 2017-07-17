@@ -52,6 +52,10 @@ final class AutosuggestConfig
      * @var mixed[][]
      */
     private $attributeFilterSuggestions;
+    /**
+     * @var bool
+     */
+    private $showOutOfStock;
 
     /**
      * @param bool $active
@@ -63,10 +67,20 @@ final class AutosuggestConfig
      * @param bool $showCompleteCategoryPath
      * @param string $categoryLinkType
      * @param $attributeFilterSuggestions
+     * @param bool $showOutOfStock
      */
-    public function __construct($active, $usePhpFile, $maxNumberSearchwordSuggestions, $maxNumberProductSuggestions,
-                                $maxNumberCategorySuggestions, $maxNumberCmsPageSuggestions, $showCompleteCategoryPath, $categoryLinkType, $attributeFilterSuggestions)
-    {
+    public function __construct(
+        $active,
+        $usePhpFile,
+        $maxNumberSearchwordSuggestions,
+        $maxNumberProductSuggestions,
+        $maxNumberCategorySuggestions,
+        $maxNumberCmsPageSuggestions,
+        $showCompleteCategoryPath,
+        $categoryLinkType,
+        $attributeFilterSuggestions,
+        $showOutOfStock
+    ) {
         $this->active = $active;
         $this->usePhpFile = $usePhpFile;
         $this->maxNumberSearchwordSuggestions = (int)$maxNumberSearchwordSuggestions;
@@ -76,6 +90,7 @@ final class AutosuggestConfig
         $this->showCompleteCategoryPath = $showCompleteCategoryPath;
         $this->categoryLinkType = $categoryLinkType;
         $this->attributeFilterSuggestions = $attributeFilterSuggestions;
+        $this->showOutOfStock = $showOutOfStock;
     }
 
     /**
@@ -150,5 +165,13 @@ final class AutosuggestConfig
     public function getAttributeFilterSuggestions()
     {
         return $this->attributeFilterSuggestions;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isShowOutOfStock()
+    {
+        return $this->showOutOfStock;
     }
 }

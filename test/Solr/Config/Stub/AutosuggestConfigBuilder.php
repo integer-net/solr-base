@@ -23,6 +23,7 @@ class AutosuggestConfigBuilder
     private $showCompleteCategoryPath = 0;
     private $categoryLinkType = 'filter';
     private $attributeFilterSuggestions = array();
+    private $showOutOfStock = true;
 
     public static function defaultConfig()
     {
@@ -125,6 +126,6 @@ class AutosuggestConfigBuilder
     {
         return new AutosuggestConfig($this->active, $this->usePhpFile, $this->maxNumberSearchWordSuggestions,
             $this->maxNumberProductSuggestions, $this->maxNumberCategorySuggestions, $this->maxNumberCmsPageSuggestions,
-            $this->showCompleteCategoryPath, $this->categoryLinkType, $this->attributeFilterSuggestions);
+            $this->showCompleteCategoryPath, $this->categoryLinkType, $this->attributeFilterSuggestions, $this->showOutOfStock);
     }
 }

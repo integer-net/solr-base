@@ -46,6 +46,10 @@ final class CategoryConfig
      * @var float
      */
     private $fuzzySensitivity;
+    /**
+     * @var bool
+     */
+    private $showOutOfStock;
 
     /**
      * @param bool $active
@@ -56,7 +60,7 @@ final class CategoryConfig
      * @param bool $isFuzzyActive
      * @param float $fuzzySensitivity
      */
-    public function __construct($active, $filterPosition, $indexerActive, $useInSearchResults, $maxNumberResults, $isFuzzyActive, $fuzzySensitivity)
+    public function __construct($active, $filterPosition, $indexerActive, $useInSearchResults, $maxNumberResults, $isFuzzyActive, $fuzzySensitivity, $showOutOfStock)
     {
         $this->active = $active;
         $this->filterPosition = $filterPosition;
@@ -65,6 +69,7 @@ final class CategoryConfig
         $this->maxNumberResults = $maxNumberResults;
         $this->isFuzzyActive = $isFuzzyActive;
         $this->fuzzySensitivity = $fuzzySensitivity;
+        $this->showOutOfStock = $showOutOfStock;
     }
 
     /**
@@ -123,4 +128,11 @@ final class CategoryConfig
         return $this->fuzzySensitivity;
     }
 
+    /**
+     * @return bool
+     */
+    public function isShowOutOfStock()
+    {
+        return $this->showOutOfStock;
+    }
 }

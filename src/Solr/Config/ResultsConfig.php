@@ -41,6 +41,10 @@ final class ResultsConfig
      * @var float[]
      */
     private $customPriceIntervals;
+    /**
+     * @var bool
+     */
+    private $showOutOfStock;
 
     /**
      * IntegerNet\Solr\Config\ResultsConfig constructor.
@@ -51,9 +55,18 @@ final class ResultsConfig
      * @param float $maxPrice
      * @param bool $useCustomPriceIntervals
      * @param float[] $customPriceIntervals
+     * @param bool $showOutOfStock
      */
-    public function __construct($useHtmlFromSolr, $searchOperator, $priorityCategories, $priceStepSize, $maxPrice, $useCustomPriceIntervals, array $customPriceIntervals)
-    {
+    public function __construct(
+        $useHtmlFromSolr,
+        $searchOperator,
+        $priorityCategories,
+        $priceStepSize,
+        $maxPrice,
+        $useCustomPriceIntervals,
+        array $customPriceIntervals,
+        $showOutOfStock
+    ) {
         $this->useHtmlFromSolr = $useHtmlFromSolr;
         $this->searchOperator = $searchOperator;
         $this->priorityCategories = $priorityCategories;
@@ -61,6 +74,7 @@ final class ResultsConfig
         $this->maxPrice = $maxPrice;
         $this->useCustomPriceIntervals = $useCustomPriceIntervals;
         $this->customPriceIntervals = $customPriceIntervals;
+        $this->showOutOfStock = $showOutOfStock;
     }
 
     /**
@@ -119,5 +133,11 @@ final class ResultsConfig
         return $this->customPriceIntervals;
     }
 
-
+    /**
+     * @return bool
+     */
+    public function isShowOutOfStock()
+    {
+        return $this->showOutOfStock;
+    }
 }
