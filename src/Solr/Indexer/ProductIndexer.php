@@ -203,7 +203,7 @@ class ProductIndexer
             'is_visible_in_catalog_i' => $product->isVisibleInCatalog(),
             'is_visible_in_search_i' => $product->isVisibleInSearch(),
             'has_special_price_i' => $product->hasSpecialPrice(),
-            'is_in_stock_i' => $product->isInStock(),
+            'is_in_stock_i' => intval($product->isInStock()),
         ));
 
         $this->_addBoostToProductData($product, $productData);
