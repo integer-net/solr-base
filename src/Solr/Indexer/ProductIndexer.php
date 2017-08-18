@@ -200,9 +200,9 @@ class ProductIndexer
             'category_name_t_mv' => $this->_categoryRepository->getCategoryNames($categoryIds, $product->getStoreId()),
             'store_id' => $product->getStoreId(),
             'content_type' => self::CONTENT_TYPE,
-            'is_visible_in_catalog_i' => $product->isVisibleInCatalog(),
-            'is_visible_in_search_i' => $product->isVisibleInSearch(),
-            'has_special_price_i' => $product->hasSpecialPrice(),
+            'is_visible_in_catalog_i' => intval($product->isVisibleInCatalog()),
+            'is_visible_in_search_i' => intval($product->isVisibleInSearch()),
+            'has_special_price_i' => intval($product->hasSpecialPrice()),
             'is_in_stock_i' => intval($product->isInStock()),
         ));
 
