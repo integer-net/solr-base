@@ -185,8 +185,8 @@ class Apache_Solr_HttpTransport_Curl extends Apache_Solr_HttpTransport_Abstract
 			// set the post data
 			CURLOPT_POSTFIELDS => $postData,
 
-			// set the content type
-			CURLOPT_HTTPHEADER => array("Content-Type: {$contentType}"),
+			// set the content type; Prevent auto-resume (Status 100 "continue") as it is not supported.
+			CURLOPT_HTTPHEADER => array("Content-Type: {$contentType}", "Expect:"),
 
 			// set the timeout
 			CURLOPT_TIMEOUT => $timeout
