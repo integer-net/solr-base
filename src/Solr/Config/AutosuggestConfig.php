@@ -56,6 +56,14 @@ final class AutosuggestConfig
      * @var bool
      */
     private $showOutOfStock;
+    /**
+     * @var bool
+     */
+    private $fuzzyActiveForCategories;
+    /**
+     * @var float
+     */
+    private $fuzzySensitivityForCategories;
 
     /**
      * @param bool $active
@@ -68,6 +76,8 @@ final class AutosuggestConfig
      * @param string $categoryLinkType
      * @param $attributeFilterSuggestions
      * @param bool $showOutOfStock
+     * @param bool $fuzzyActiveForCategories
+     * @param float $fuzzySensitivityForCategories
      */
     public function __construct(
         $active,
@@ -79,7 +89,9 @@ final class AutosuggestConfig
         $showCompleteCategoryPath,
         $categoryLinkType,
         $attributeFilterSuggestions,
-        $showOutOfStock
+        $showOutOfStock,
+        $fuzzyActiveForCategories = true,
+        $fuzzySensitivityForCategories = 0.8
     ) {
         $this->active = $active;
         $this->usePhpFile = $usePhpFile;
@@ -91,6 +103,8 @@ final class AutosuggestConfig
         $this->categoryLinkType = $categoryLinkType;
         $this->attributeFilterSuggestions = $attributeFilterSuggestions;
         $this->showOutOfStock = $showOutOfStock;
+        $this->fuzzyActiveForCategories = $fuzzyActiveForCategories;
+        $this->fuzzySensitivityForCategories = $fuzzySensitivityForCategories;
     }
 
     /**
@@ -173,5 +187,21 @@ final class AutosuggestConfig
     public function isShowOutOfStock()
     {
         return $this->showOutOfStock;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFuzzyActiveForCategories()
+    {
+        return $this->fuzzyActiveForCategories;
+    }
+
+    /**
+     * @return float
+     */
+    public function getFuzzySensitivityForCategories()
+    {
+        return $this->fuzzySensitivityForCategories;
     }
 }
