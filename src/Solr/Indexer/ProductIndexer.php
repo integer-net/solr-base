@@ -220,7 +220,8 @@ class ProductIndexer
 
         $this->_eventDispatcher->dispatch('integernet_solr_get_product_data', array(
             'product' => $product,
-            'product_data' => $productData
+            'product_data' => $productData,
+            'children' => $children,
         ));
 
         return $productData;
