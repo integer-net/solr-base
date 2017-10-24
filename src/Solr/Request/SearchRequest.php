@@ -106,6 +106,9 @@ class SearchRequest implements Request, HasFilter
         $minimumResults = $this->fuzzyConfig->getMinimumResults();
         if ($this->getCurrentSort() !== 'position') {
             $result = $this->getResultFromRequest($pageSize, $isFuzzyActive, $activeFilterAttributeCodes);
+            if ($result->documents()->count() === 0) {
+                $result = $this->getBroaderResult($activeFilterAttributeCodes, $pageSize, $result);
+            }
             return $this->sliceResult($result);
         } else {
             $result = $this->getResultFromRequest($isFuzzyActive ? self::PAGESIZE_ALL : $pageSize, false, $activeFilterAttributeCodes);
@@ -116,12 +119,7 @@ class SearchRequest implements Request, HasFilter
                 $result = $result->merge($fuzzyResult, $pageSize);
             }
             if ($result->documents()->count() === 0) {
-                $this->foundNoResults = true;
-                $check = explode(' ', $this->queryBuilder->getSearchString()->getRawString());
-                if (count($check) > 1) {
-                    $result = $this->getResultFromRequest($pageSize, false, $activeFilterAttributeCodes);
-                }
-                $this->foundNoResults = false;
+                $result = $this->getBroaderResult($activeFilterAttributeCodes, $pageSize, $result);
             }
             return $this->sliceResult($result);
         }
@@ -241,5 +239,22 @@ class SearchRequest implements Request, HasFilter
     private function getResource()
     {
         return $this->resource;
+    }
+
+    /**
+     * @param string[] $activeFilterAttributeCodes
+     * @param int $pageSize
+     * @param SolrResponse
+     * @return SolrResponse
+     */
+    private function getBroaderResult($activeFilterAttributeCodes, $pageSize, $result)
+    {
+        $this->foundNoResults = true;
+        $check = explode(' ', $this->queryBuilder->getSearchString()->getRawString());
+        if (count($check) > 1) {
+            $result = $this->getResultFromRequest($pageSize, false, $activeFilterAttributeCodes);
+        }
+        $this->foundNoResults = false;
+        return $result;
     }
 }

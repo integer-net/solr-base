@@ -49,6 +49,10 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
      * @var $eventDispatcher EventDispatcher
      */
     protected $eventDispatcher;
+    /**
+     * @var bool
+     */
+    private $broaden = false;
 
     public function __construct(AttributeRepository $attributeRepository, FilterQueryBuilder $filterQueryBuilder,
                                 Pagination $pagination, ResultsConfig $resultsConfig, FuzzyConfig $fuzzyConfig, $storeId, $eventDispatcher)
@@ -60,6 +64,16 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
         $this->fuzzyConfig = $fuzzyConfig;
         $this->storeId = (int) $storeId;
         $this->eventDispatcher = $eventDispatcher;
+    }
+
+    /**
+     * @param boolean $broaden
+     * @return AbstractParamsBuilder
+     */
+    public function setBroaden($broaden)
+    {
+        $this->broaden = $broaden;
+        return $this;
     }
 
     /**
@@ -103,7 +117,7 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
 
         $params = $this->addFacetParams($params);
 
-        if (!$this->fuzzyConfig->isActive()) {
+        if (!$this->fuzzyConfig->isActive() || $this->broaden) {
             $params['mm'] = '0%';
         }
         return $params;
