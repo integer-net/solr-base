@@ -114,6 +114,17 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
         return $this->resultsConfig;
     }
 
+    public function build()
+    {
+        return new Query(
+            $this->getStoreId(),
+            $this->getQueryText(),
+            0,
+            $this->getPagination()->getPageSize() * $this->getPagination()->getCurrentPage(),
+            $this->getParamsBuilder()->setBroaden($this->broaden)->buildAsArray($this->getAttributetoReset())
+        );
+    }
+
     /**
      * @return string
      */

@@ -116,6 +116,12 @@ abstract class AbstractQueryBuilder implements QueryBuilder
     {
         return $this->eventDispatcher;
     }
-    
-    
+
+    /**
+     * @return string
+     */
+    protected function getAttributetoReset()
+    {
+        return $this->attributetoReset;
+    }
 }
