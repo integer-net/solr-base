@@ -99,6 +99,7 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
             'facet.mincount' => '1',
             'facet.field' => $this->getFacetFieldCodes(),
             'defType' => 'edismax',
+            'mm' => '1',
         );
 
         $params = $this->addFacetParams($params);
