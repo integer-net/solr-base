@@ -20,6 +20,7 @@ use IntegerNet\Solr\Implementor\EventDispatcher;
 
 abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPagination
 {
+    private $attributeToReset = '';
     /**
      * @var $attributeRepository AttributeRepository
      */
@@ -87,25 +88,24 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
     }
 
     /**
-     * @param string $attributeToReset
      * @return array
      */
-    public function buildAsArray($attributeToReset = '')
+    public function buildAsArray()
     {
-        if ($attributeToReset) {
-            switch($attributeToReset) {
+        if ($this->attributeToReset) {
+            switch($this->attributeToReset) {
                 case 'category';
                     break;
                 case 'price':
-                    $attributeToReset .= '_f';
+                    $this->attributeToReset .= '_f';
                     break;
                 default:
-                    $attributeToReset .= '_facet';
+                    $this->attributeToReset .= '_facet';
             }
         }
         $params = array(
             'q.op' => $this->resultsConfig->getSearchOperator(),
-            'fq' => $this->getFilterQuery($attributeToReset),
+            'fq' => $this->getFilterQuery($this->attributeToReset),
             'fl' => 'result_html_autosuggest_nonindex,score,sku_s,name_s,product_id',
             'sort' => $this->getSortParam(),
             'facet' => 'true',
@@ -263,7 +263,18 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
             }
             $params['f.price_f.facet.interval.set'][] = sprintf('(%f,%s]', $lowerBorder, '*');
             return $params;
-        }return $params;
+        }
+
+        return $params;
     }
 
+    /**
+     * @param string $attributeToReset
+     * @return $this
+     */
+    public function setAttributeToReset($attributeToReset)
+    {
+        $this->attributeToReset = $attributeToReset;
+        return $this;
+    }
 }

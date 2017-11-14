@@ -70,7 +70,9 @@ abstract class AbstractQueryBuilder implements QueryBuilder
             $this->getQueryText(),
             0, 
             $this->pagination->getPageSize() * $this->pagination->getCurrentPage(),
-            $this->paramsBuilder->buildAsArray($this->attributetoReset)
+            $this->paramsBuilder
+                ->setAttributeToReset($this->attributetoReset)
+                ->buildAsArray()
         );
     }
 

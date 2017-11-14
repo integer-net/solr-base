@@ -59,8 +59,16 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
      * @param int $storeId
      * @param EventDispatcher $eventDispatcher
      */
-    public function __construct(SearchString $searchString, FuzzyConfig $fuzzyConfig, ResultsConfig $resultsConfig, AttributeRepository $attributeRepository, Pagination $pagination, ParamsBuilder $paramsBuilder, $storeId, EventDispatcher $eventDispatcher)
-    {
+    public function __construct(
+        SearchString $searchString,
+        FuzzyConfig $fuzzyConfig,
+        ResultsConfig $resultsConfig,
+        AttributeRepository $attributeRepository,
+        Pagination $pagination,
+        ParamsBuilder $paramsBuilder,
+        $storeId,
+        EventDispatcher $eventDispatcher
+    ) {
         parent::__construct($attributeRepository, $pagination, $paramsBuilder, $storeId, $eventDispatcher);
         $this->fuzzyConfig = $fuzzyConfig;
         $this->resultsConfig = $resultsConfig;
@@ -121,7 +129,10 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
             $this->getQueryText(),
             0,
             $this->getPagination()->getPageSize() * $this->getPagination()->getCurrentPage(),
-            $this->getParamsBuilder()->setBroaden($this->broaden)->buildAsArray($this->getAttributetoReset())
+            $this->getParamsBuilder()
+                ->setBroaden($this->broaden)
+                ->setAttributeToReset($this->getAttributetoReset())
+                ->buildAsArray()
         );
     }
 
