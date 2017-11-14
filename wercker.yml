@@ -1,6 +1,6 @@
 box: php
 build-56:
-  box: php:5.6.24-cli
+  box: php:5.6-cli
   steps:
     - install-packages:
         packages: git zip
@@ -14,7 +14,7 @@ build-56:
         name: run tests
         code: vendor/bin/phpunit
 build-70:
-  box: php:7.0.9-cli
+  box: php:7.0-cli
   steps:
     - install-packages:
         packages: git zip
