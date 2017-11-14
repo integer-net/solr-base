@@ -83,7 +83,8 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
             'f.price_f.facet.range.gap' => ResultConfigBuilder::DEFAULT_STEP_SIZE,
             'f.price_f.facet.interval.set' => [
                 "(0.000000,10.000000]", "(10.000000,20.000000]", "(20.000000,30.000000]", "(30.000000,40.000000]", "(40.000000,50.000000]", "(50.000000,*]"
-            ]
+            ],
+            'mm' => '1',
         ];
         $defaultResultConfig = ResultConfigBuilder::defaultConfig()->build();
         $allData = [
