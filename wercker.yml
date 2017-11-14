@@ -3,6 +3,7 @@ build-56:
   box: php:5.6-cli
   steps:
     - install-packages:
+        clear-cache: true
         packages: git zip
     - script:
         name: install composer
@@ -17,6 +18,7 @@ build-70:
   box: php:7.0-cli
   steps:
     - install-packages:
+        clear-cache: true
         packages: git zip
     - script:
         name: install composer
