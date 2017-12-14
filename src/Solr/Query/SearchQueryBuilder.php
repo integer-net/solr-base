@@ -7,6 +7,7 @@
  * @copyright  Copyright (c) 2015 integer_net GmbH (http://www.integer-net.de/)
  * @author     Fabian Schmengler <fs@integer-net.de>
  */
+
 namespace IntegerNet\Solr\Query;
 
 use IntegerNet\Solr\Config\FuzzyConfig;
@@ -153,7 +154,7 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
             $queryText = '';
 
             $attributes = $this->getAttributeRepository()->getSearchableAttributes($this->getStoreId());
-            $isFirst    = true;
+            $isFirst = true;
 
             foreach ($attributes as $attribute) {
                 /** @var $attribute Attribute */
@@ -249,18 +250,12 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
      */
     private function getNormalizedBoost($boost)
     {
-        if ($boost == 0) {
-            return $boost;
-        }
-        if ($boost < 1) {
-            $boost = rtrim(
-                rtrim(
-                    sprintf('%.20F', $boost),
-                    '0'
-                ),
-                '.'
-            );
-        }
-        return $boost;
+        return rtrim(
+            rtrim(
+                sprintf('%.20F', $boost),
+                '0'
+            ),
+            '.'
+        );
     }
 }
