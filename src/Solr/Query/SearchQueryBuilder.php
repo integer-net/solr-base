@@ -97,7 +97,7 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
         $this->searchString = $searchString;
         return $this;
     }
-    
+
     /**
      * @return FuzzyConfig
      */
@@ -105,7 +105,7 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
     {
         return $this->fuzzyConfig;
     }
-    
+
     /**
      * @return ResultsConfig
      */
@@ -163,7 +163,7 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
 
                     if (strstr($fieldName, '_f') == false) {
 
-                        $boost = '^' . floatval($attribute->getSolrBoost());
+                        $boost = '^' . $this->getNormalizedBoost(floatval($attribute->getSolrBoost()));
 
                         if ($this->broaden) {
 
@@ -181,22 +181,25 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
                     }
                 }
             }
-            
+
             $fieldName = 'category_name_t_mv';
 
-            $boost = '^' . floatval($this->getResultsConfig()->getPriorityCategories());
+            $categoriesPriority = floatval($this->getResultsConfig()->getPriorityCategories());
+            if ($categoriesPriority > 0) {
+                $boost = '^' . $this->getNormalizedBoost($categoriesPriority);
 
-            if ($this->broaden) {
+                if ($this->broaden) {
 
-                foreach ($searchValue as $value) {
+                    foreach ($searchValue as $value) {
+                        $queryText .= ($isFirst) ? '' : ' OR ';
+                        $queryText .= $fieldName . ':"' . trim($value) . '"~100' . $boost;
+                        $isFirst = false;
+                    }
+
+                } else {
                     $queryText .= ($isFirst) ? '' : ' OR ';
-                    $queryText .= $fieldName . ':"' . trim($value) . '"~100' . $boost;
-                    $isFirst = false;
+                    $queryText .= $fieldName . ':"' . trim($searchValue) . '"~100' . $boost;
                 }
-
-            } else {
-                $queryText .= ($isFirst) ? '' : ' OR ';
-                $queryText .= $fieldName . ':"' . trim($searchValue) . '"~100' . $boost;
             }
         }
         return $queryText;
@@ -235,5 +238,29 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
     protected function getEventDispatcher()
     {
         return $this->eventDispatcher;
+    }
+
+    /**
+     * Don't use "E" notation for values lower than 0.00001 (i.e. use 0.0000001 instead of 1E-07)
+     * Taken from https://stackoverflow.com/a/10917464/3141504
+     *
+     * @param float $boost
+     * @return string
+     */
+    private function getNormalizedBoost($boost)
+    {
+        if ($boost == 0) {
+            return $boost;
+        }
+        if ($boost < 1) {
+            $boost = rtrim(
+                rtrim(
+                    sprintf('%.20F', $boost),
+                    '0'
+                ),
+                '.'
+            );
+        }
+        return $boost;
     }
 }
