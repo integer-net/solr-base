@@ -230,8 +230,14 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
         $params['fl'] = 'result_html_list_nonindex,result_html_grid_nonindex,score,sku_s,name_s,product_id';
         $params['facet.interval'] = 'price_f';
         $params['stats'] = 'true';
-        $params['stats.field'] = 'price_f';
+        $params['stats.field'] = [];
 
+        foreach ($this->attributeRespository->getFilterableInSearchAttributes($this->storeId) as $filterableAttribute) {
+            if ($filterableAttribute->getBackendType() == 'decimal') {
+                $indexField = new IndexField($filterableAttribute, $this->eventDispatcher);
+                $params['stats.field'][] = $indexField->getFieldName();
+            }
+        }
 
         if (($priceStepsize = $resultsConfig->getPriceStepSize())
             && ($maxPrice = $resultsConfig->getMaxPrice())
@@ -263,8 +269,8 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
                 $lowerBorder = $upperBorder;
             }
             $params['f.price_f.facet.interval.set'][] = sprintf('(%f,%s]', $lowerBorder, '*');
-            return $params;
-        }return $params;
+        }
+        return $params;
     }
 
 }
