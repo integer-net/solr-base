@@ -228,7 +228,7 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
         $resultsConfig = $this->resultsConfig;
 
         $params['fl'] = 'result_html_list_nonindex,result_html_grid_nonindex,score,sku_s,name_s,product_id';
-        $params['facet.interval'] = 'price_f';
+        $params['facet.interval'] = [];
         $params['stats'] = 'true';
         $params['stats.field'] = [];
 
@@ -236,6 +236,8 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
             if ($filterableAttribute->getBackendType() == 'decimal') {
                 $indexField = new IndexField($filterableAttribute, $this->eventDispatcher);
                 $params['stats.field'][] = $indexField->getFieldName();
+                $params['facet.interval'][] = $indexField->getFieldName();
+                $params['f.' . $indexField->getFieldName() . '.facet.interval.set'] = ['(*,*)'];
             }
         }
 
