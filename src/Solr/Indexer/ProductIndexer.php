@@ -24,7 +24,7 @@ use IntegerNet\Solr\Implementor\ProductIterator;
 use IntegerNet\Solr\Implementor\ProductRepository;
 use IntegerNet\Solr\Implementor\IndexCategoryRepository;
 
-class ProductIndexer
+class ProductIndexer implements Indexer
 {
     const CONTENT_TYPE = 'product';
 
@@ -98,8 +98,13 @@ class ProductIndexer
      * @throws \Exception
      * @throws \IntegerNet\Solr\Exception
      */
-    public function reindex($productIds = null, $emptyIndex = false, $restrictToStoreIds = null, $sliceId = null, $totalNumberSlices = null)
-    {
+    public function reindex(
+        $productIds = null,
+        $emptyIndex = false,
+        $restrictToStoreIds = null,
+        $sliceId = null,
+        $totalNumberSlices = null
+    ) {
         if (is_null($productIds) && is_null($sliceId)) {
             $this->checkSwapCoresConfiguration($restrictToStoreIds);
         }
