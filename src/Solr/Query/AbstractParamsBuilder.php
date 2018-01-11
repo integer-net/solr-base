@@ -10,7 +10,6 @@
 namespace IntegerNet\Solr\Query;
 use IntegerNet\Solr\Config\FuzzyConfig;
 use IntegerNet\Solr\Config\ResultsConfig;
-use IntegerNet\Solr\Exception;
 use IntegerNet\Solr\Indexer\IndexField;
 use IntegerNet\Solr\Query\Params\FilterQueryBuilder;
 use IntegerNet\Solr\Implementor\AttributeRepository;
