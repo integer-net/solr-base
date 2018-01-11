@@ -19,9 +19,9 @@ class ServiceChainTest extends PHPUnit_Framework_TestCase
     {
         /** @var \PHPUnit_Framework_MockObject_MockObject[] $mockServices */
         $mockServices = [
-            $this->getMock(ServiceBase::class, ['newMethod1']),
-            $this->getMock(ServiceBase::class, ['newMethod1', 'newMethod2']),
-            $this->getMock(ServiceBase::class, ['newMethod3']),
+            $this->getMockBuilder(ServiceBase::class)->setMethods(['newMethod1'])->getMock(),
+            $this->getMockBuilder(ServiceBase::class)->setMethods(['newMethod1', 'newMethod2'])->getMock(),
+            $this->getMockBuilder(ServiceBase::class)->setMethods(['newMethod3'])->getMock(),
         ];
         $mockServices[0]->expects($this->once())->method('newMethod1')->with('parameter1')->willReturn('return1');
         $mockServices[1]->expects($this->once())->method('newMethod2')->with('parameter2')->willReturn('return2');
@@ -42,7 +42,7 @@ class ServiceChainTest extends PHPUnit_Framework_TestCase
     public function shouldThrowExceptionIfMethodNotFoundInChain()
     {
         $base = new ServiceBase();
-        $base->appendService($this->getMock(ServiceBase::class, ['newMethod']));
+        $base->appendService($this->getMockBuilder(ServiceBase::class)->setMethods(['newMethod'])->getMock());
         $base->nonexistendMethod();
     }
 }
