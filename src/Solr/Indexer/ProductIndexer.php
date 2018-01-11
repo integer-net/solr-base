@@ -91,7 +91,10 @@ class ProductIndexer implements Indexer
 
     /**
      * @param array|null $productIds Restrict to given Products if this is set
-     * @param boolean|string $emptyIndex Whether to truncate the index before refilling it
+     * @param boolean|string $emptyIndex Whether to truncate the index before refilling it. Possible values:
+     *                                   true: use config
+     *                                   false: never truncate
+     *                                   'force': always truncate
      * @param null|int[] $restrictToStoreIds
      * @param null|int $sliceId
      * @param null|int $totalNumberSlices
@@ -164,6 +167,12 @@ class ProductIndexer implements Indexer
         if (is_null($productIds) && is_null($sliceId)) {
             $this->swapCores($restrictToStoreIds);
         }
+    }
+
+    public function reindexSlice(Slice $slice, $restrictToStoreIds = null)
+    {
+        //TODO refactor to reduce complexity in reindex()
+        $this->reindex(null, false, $restrictToStoreIds, $slice->id(), $slice->totalNumber());
     }
 
     /**
@@ -539,17 +548,27 @@ class ProductIndexer implements Indexer
         $this->_getResource()->deleteAllDocuments($storeId, self::CONTENT_TYPE);
     }
 
+    /**
+     * @deprecated Not part of the Indexer interface, public method will be removed in 4.0.0. Use resource directly instead.
+     * @see \IntegerNet\Solr\Resource\ResourceFacade
+     */
     public function activateSwapCore()
     {
         $this->_getResource()->setUseSwapIndex();
     }
 
+    /**
+     * @deprecated Not part of the Indexer interface, public method will be removed in 4.0.0. Use resource directly instead.
+     * @see \IntegerNet\Solr\Resource\ResourceFacade
+     */
     public function deactivateSwapCore()
     {
         $this->_getResource()->setUseSwapIndex(false);
     }
 
     /**
+     * @deprecated Not part of the Indexer interface, public method will be removed in 4.0.0. Use resource directly instead.
+     * @see \IntegerNet\Solr\Resource\ResourceFacade
      * @param null|int[] $restrictToStoreIds
      */
     public function swapCores($restrictToStoreIds)
@@ -558,6 +577,8 @@ class ProductIndexer implements Indexer
     }
 
     /**
+     * @deprecated Not part of the Indexer interface, public method will be removed in 4.0.0. Use resource directly instead.
+     * @see \IntegerNet\Solr\Resource\ResourceFacade
      * @param $restrictToStoreIds
      */
     public function checkSwapCoresConfiguration($restrictToStoreIds)

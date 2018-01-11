@@ -15,10 +15,13 @@ interface Indexer
     /**
      * Add/update entities in index
      *
+     * The sliceId/totalNumberSlices parameters are deprecated, they cannot be used together with entityIds/emptyIndex.
+     * Use reindexSlice() instead to reindex slices.
+     *
      * @param string[]|null $entityIds IDs to reindex, depends on content type of the concrete indexer. Null for "all"
      * @param bool $emptyIndex If index should be cleared before writing
      * @param int[]|null $restrictToStoreIds Store IDs to reindex. Null for "all"
-     * @param int|null $sliceId Number of slice for partial reindexing. Null for no partial reindexing
+     * @param int|null $sliceId Number of slice for partial reindexing. Null for no partial reindexing.
      * @param int|null $totalNumberSlices Number of slices. The entities are divided into this many slices.
      */
     public function reindex(
@@ -28,6 +31,12 @@ interface Indexer
         $sliceId = null,
         $totalNumberSlices = null
     );
+
+    /**
+     * @param Slice $slice
+     * @return mixed
+     */
+    public function reindexSlice(Slice $slice, $restrictToStoreIds = null);
 
     /**
      * Delete given entities from index
