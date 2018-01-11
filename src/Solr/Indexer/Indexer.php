@@ -10,8 +10,17 @@
 
 namespace IntegerNet\Solr\Indexer;
 
+use IntegerNet\Solr\Indexer\Progress\ProgressHandler;
+
 interface Indexer
 {
+    /**
+     * Adds a callback for progress updates
+     *
+     * @param ProgressHandler $handler
+     */
+    public function addProgressHandler(ProgressHandler $handler);
+
     /**
      * Add/update entities in index
      *

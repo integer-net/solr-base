@@ -14,6 +14,8 @@ use IntegerNet\Solr\Implementor\ProductRenderer;
 use IntegerNet\Solr\Implementor\StoreEmulation;
 use IntegerNet\Solr\Indexer\Data\ProductAssociation;
 use IntegerNet\Solr\Indexer\Data\ProductIdChunks;
+use IntegerNet\Solr\Indexer\Progress\ProgressDispatcher;
+use IntegerNet\Solr\Indexer\Progress\ProgressHandler;
 use IntegerNet\Solr\Resource\ResourceFacade;
 use IntegerNet\Solr\Implementor\Config;
 use IntegerNet\Solr\Implementor\EventDispatcher;
@@ -29,27 +31,36 @@ class ProductIndexer implements Indexer
     const CONTENT_TYPE = 'product';
 
     /** @var  int */
-    private $_defaultStoreId;
+    private $defaultStoreId;
     /**
      * Configuration reader, by store id
      *
      * @var  Config[]
      */
-    private $_config;
+    private $config;
     /** @var  ResourceFacade */
-    private $_resource;
+    private $resource;
     /** @var  EventDispatcher */
-    private $_eventDispatcher;
+    private $eventDispatcher;
     /** @var  AttributeRepository */
-    private $_attributeRepository;
+    private $attributeRepository;
     /** @var  IndexCategoryRepository */
-    private $_categoryRepository;
+    private $categoryRepository;
     /** @var  ProductRepository */
     private $productRepository;
     /** @var  ProductRenderer */
-    private $_renderer;
+    private $renderer;
     /** @var StoreEmulation */
     private $storeEmulation;
+
+    /**
+     * @var callable[]
+     */
+    private $progressHandlers = [];
+    /**
+     * @var ProgressDispatcher
+     */
+    private $progressDispatcher;
 
     /**
      * @param int $defaultStoreId
@@ -62,31 +73,43 @@ class ProductIndexer implements Indexer
      * @param ProductRenderer $_renderer
      * @param StoreEmulation $storeEmulation
      */
-    public function __construct($defaultStoreId, array $_config, ResourceFacade $_resource, EventDispatcher $_eventDispatcher,
-                                AttributeRepository $_attributeRepository, IndexCategoryRepository $_categoryRepository,
-                                ProductRepository $_productRepository, ProductRenderer $_renderer, StoreEmulation $storeEmulation)
-    {
-        $this->_defaultStoreId = $defaultStoreId;
-        $this->_config = $_config;
-        $this->_resource = $_resource;
-        $this->_eventDispatcher = $_eventDispatcher;
-        $this->_attributeRepository = new CachedAttributeRepository($_attributeRepository);
-        $this->_categoryRepository = $_categoryRepository;
+    public function __construct(
+        $defaultStoreId,
+        array $_config,
+        ResourceFacade $_resource,
+        EventDispatcher $_eventDispatcher,
+        AttributeRepository $_attributeRepository,
+        IndexCategoryRepository $_categoryRepository,
+        ProductRepository $_productRepository,
+        ProductRenderer $_renderer,
+        StoreEmulation $storeEmulation
+    ) {
+        $this->defaultStoreId = $defaultStoreId;
+        $this->config = $_config;
+        $this->resource = $_resource;
+        $this->eventDispatcher = $_eventDispatcher;
+        $this->attributeRepository = new CachedAttributeRepository($_attributeRepository);
+        $this->categoryRepository = $_categoryRepository;
         $this->productRepository = $_productRepository;
-        $this->_renderer = $_renderer;
+        $this->renderer = $_renderer;
         $this->storeEmulation = $storeEmulation;
     }
 
     protected function _getStoreConfig($storeId = null)
     {
         if ($storeId === null) {
-            $storeId = $this->_defaultStoreId;
+            $storeId = $this->defaultStoreId;
         }
         $storeId = (int)$storeId;
-        if (!isset($this->_config[$storeId])) {
+        if (!isset($this->config[$storeId])) {
             throw new \Exception("Store with ID {$storeId} not found.");
         }
-        return $this->_config[$storeId];
+        return $this->config[$storeId];
+    }
+
+    public function addProgressHandler(ProgressHandler $handler)
+    {
+        $this->progressHandlers[] = $handler;
     }
 
     /**
@@ -108,11 +131,12 @@ class ProductIndexer implements Indexer
         $sliceId = null,
         $totalNumberSlices = null
     ) {
+        $this->progressDispatcher = new ProgressDispatcher($this->progressHandlers);
         if (is_null($productIds) && is_null($sliceId)) {
             $this->checkSwapCoresConfiguration($restrictToStoreIds);
         }
 
-        foreach($this->_config as $storeId => $storeConfig) {
+        foreach($this->config as $storeId => $storeConfig) {
             if (!is_null($restrictToStoreIds) && !in_array($storeId, $restrictToStoreIds)) {
                 continue;
             }
@@ -151,8 +175,7 @@ class ProductIndexer implements Indexer
                     $productIdsToIndex,
                     $associations,
                     $pageSize);
-                $productIterator = $this->productRepository->getProductsInChunks($storeId, $chunks);
-                $this->_indexProductCollection($emptyIndex, $productIterator, $storeId, $productIdsToIndex, $associations);
+                $this->_indexProductCollection($emptyIndex, $chunks, $storeId, $productIdsToIndex, $associations);
 
                 if (is_null($productIds) && is_null($sliceId) && $storeConfig->getIndexingConfig()->isSwapCores()) {
                     $this->deactivateSwapCore();
@@ -180,7 +203,7 @@ class ProductIndexer implements Indexer
      */
     public function deleteIndex($productIds)
     {
-        foreach($this->_config as $storeId => $storeConfig) {
+        foreach($this->config as $storeId => $storeConfig) {
 
             if (! $storeConfig->getGeneralConfig()->isActive()) {
                 continue;
@@ -206,12 +229,12 @@ class ProductIndexer implements Indexer
      */
     protected function _getProductData(Product $product, ProductIterator $children)
     {
-        $categoryIds = $this->_categoryRepository->getCategoryIds($product);
+        $categoryIds = $this->categoryRepository->getCategoryIds($product);
         $productData = new IndexDocument(array(
             'id' => $product->getSolrId(), // primary identifier, must be unique
             'product_id' => $product->getId(),
             'category' => $categoryIds, // @todo get category ids from parent anchor categories as well
-            'category_name_t_mv' => $this->_categoryRepository->getCategoryNames($categoryIds, $product->getStoreId()),
+            'category_name_t_mv' => $this->categoryRepository->getCategoryNames($categoryIds, $product->getStoreId()),
             'store_id' => $product->getStoreId(),
             'content_type' => self::CONTENT_TYPE,
             'is_visible_in_catalog_i' => intval($product->isVisibleInCatalog()),
@@ -232,7 +255,7 @@ class ProductIndexer implements Indexer
 
         $this->_addCategoryProductPositionsToProductData($product, $productData);
 
-        $this->_eventDispatcher->dispatch('integernet_solr_get_product_data', array(
+        $this->eventDispatcher->dispatch('integernet_solr_get_product_data', array(
             'product' => $product,
             'product_data' => $productData,
             'children' => $children,
@@ -271,7 +294,7 @@ class ProductIndexer implements Indexer
      */
     protected function _addFacetsToProductData(Product $product, IndexDocument $productData, ProductIterator $children)
     {
-        foreach ($this->_attributeRepository->getFilterableInCatalogOrSearchAttributes($product->getStoreId()) as $attribute) {
+        foreach ($this->attributeRepository->getFilterableInCatalogOrSearchAttributes($product->getStoreId()) as $attribute) {
 
             if ($attribute->getAttributeCode() == 'price') {
                 $price = $product->getPrice();
@@ -297,7 +320,7 @@ class ProductIndexer implements Indexer
                         break;
                 }
 
-                $indexField = new IndexField($attribute, $this->_eventDispatcher);
+                $indexField = new IndexField($attribute, $this->eventDispatcher);
                 $fieldName = $indexField->getFieldName();
                 if (!$productData->hasData($fieldName)) {
                     $value = $product->getSearchableAttributeValue($attribute);
@@ -372,13 +395,13 @@ class ProductIndexer implements Indexer
             $productData->setData('price_f', 0.00);
         }
 
-        foreach ($this->_attributeRepository->getSearchableAttributes($product->getStoreId()) as $attribute) {
+        foreach ($this->attributeRepository->getSearchableAttributes($product->getStoreId()) as $attribute) {
 
             if (($attribute->getAttributeCode() == 'price') && ($productData->getData('price_f') > 0)) {
                 continue;
             }
 
-            $indexField = new IndexField($attribute, $this->_eventDispatcher);
+            $indexField = new IndexField($attribute, $this->eventDispatcher);
             $fieldName = $indexField->getFieldName();
 
             $solrBoost = floatval($attribute->getSolrBoost());
@@ -444,9 +467,9 @@ class ProductIndexer implements Indexer
      */
     protected function _addSortingDataToProductData(Product $product, IndexDocument $productData)
     {
-        foreach ($this->_attributeRepository->getSortableAttributes($product->getStoreId()) as $attribute) {
+        foreach ($this->attributeRepository->getSortableAttributes($product->getStoreId()) as $attribute) {
 
-            $indexField = new IndexField($attribute, $this->_eventDispatcher, true);
+            $indexField = new IndexField($attribute, $this->eventDispatcher, true);
             $fieldName = $indexField->getFieldName();
 
             if (!$productData->getData($fieldName)
@@ -465,7 +488,7 @@ class ProductIndexer implements Indexer
     protected function _addResultHtmlToProductData(Product $product, IndexDocument $productData)
     {
         $useHtmlForResults = $this->_getStoreConfig($product->getStoreId())->getResultsConfig()->isUseHtmlFromSolr();
-        $this->_renderer->addResultHtmlToProductData($product, $productData, $useHtmlForResults);
+        $this->renderer->addResultHtmlToProductData($product, $productData, $useHtmlForResults);
     }
 
     /**
@@ -474,7 +497,7 @@ class ProductIndexer implements Indexer
      */
     protected function _addCategoryProductPositionsToProductData(Product $product, IndexDocument $productData)
     {
-        foreach($this->_categoryRepository->getCategoryPositions($product) as $positionRow) {
+        foreach($this->categoryRepository->getCategoryPositions($product) as $positionRow) {
             $productData['category_' . $positionRow['category_id'] . '_position_i'] = $positionRow['position'];
         }
     }
@@ -500,7 +523,7 @@ class ProductIndexer implements Indexer
      */
     protected function _getResource()
     {
-        return $this->_resource;
+        return $this->resource;
     }
 
     /**
@@ -511,13 +534,19 @@ class ProductIndexer implements Indexer
      * @param ProductAssociation[] $associations
      * @return int
      */
-    protected function _indexProductCollection($emptyIndex, PagedProductIterator $productIterator, $storeId, $productIds, $associations)
+    protected function _indexProductCollection($emptyIndex, ProductIdChunks $chunks, $storeId, $productIds, $associations)
     {
         $idsForDeletion = array();
-        $documentQueue = new IndexDocumentQueue($this->_resource, $storeId);
+        $documentQueue = new IndexDocumentQueue($this->resource, $storeId);
         $productIds = array_flip((array)$productIds);
 
+        $productIterator = $this->productRepository->getProductsInChunks($storeId, $chunks);
         $productIterator->setPageCallback([$documentQueue, 'flush']);
+
+        $this->progressDispatcher->start(
+            "Create " . self::CONTENT_TYPE . " index for store $storeId",
+            $chunks->totalCount()
+        );
         foreach ($productIterator as $product) {
             if (isset($productIds[$product->getId()])) {
                 unset($productIds[$product->getId()]);
@@ -528,14 +557,25 @@ class ProductIndexer implements Indexer
             } else {
                 $idsForDeletion[] = $this->_getSolrId($product);
             }
+            $this->progressDispatcher->advance();
         }
+        $this->progressDispatcher->finish();
 
         foreach ($productIds as $productId => $value) {
             $idsForDeletion[] = $this->_getSolrIdByProductIdAndStoreId($productId, $storeId);
         }
 
-        if (!$emptyIndex && sizeof($idsForDeletion)) {
+        if (!$emptyIndex && count($idsForDeletion)) {
+            $this->progressDispatcher->start(
+                sprintf(
+                    'Delete %d removed %s entries for store %s',
+                    count($idsForDeletion),
+                    self::CONTENT_TYPE,
+                    $storeId
+                )
+            );
             $this->_getResource()->deleteByMultipleIds($storeId, $idsForDeletion);
+            $this->progressDispatcher->finish();
         }
         return $storeId;
     }
@@ -545,7 +585,9 @@ class ProductIndexer implements Indexer
      */
     public function clearIndex($storeId)
     {
+        $this->progressDispatcher->start("Clear " . self::CONTENT_TYPE . " index for store $storeId");
         $this->_getResource()->deleteAllDocuments($storeId, self::CONTENT_TYPE);
+        $this->progressDispatcher->finish();
     }
 
     /**
@@ -554,6 +596,7 @@ class ProductIndexer implements Indexer
      */
     public function activateSwapCore()
     {
+        $this->progressDispatcher->info('Activate swap cores');
         $this->_getResource()->setUseSwapIndex();
     }
 
@@ -563,6 +606,7 @@ class ProductIndexer implements Indexer
      */
     public function deactivateSwapCore()
     {
+        $this->progressDispatcher->info('Deactivate swap cores');
         $this->_getResource()->setUseSwapIndex(false);
     }
 
@@ -573,7 +617,12 @@ class ProductIndexer implements Indexer
      */
     public function swapCores($restrictToStoreIds)
     {
+        $this->progressDispatcher->start(
+            'Swap Solr cores' . ($restrictToStoreIds ? ' for stores ' . implode(',', $restrictToStoreIds) : '')
+            . ' (if swap core is configured)'
+        );
         $this->_getResource()->swapCores($restrictToStoreIds);
+        $this->progressDispatcher->finish();
     }
 
     /**
