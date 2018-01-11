@@ -11,9 +11,11 @@ namespace IntegerNet\Solr\Request;
 
 use IntegerNet\Solr\Config\FuzzyConfig;
 use IntegerNet\Solr\Event\Transport;
+use IntegerNet\Solr\Implementor\AttributeRepository;
 use IntegerNet\Solr\Implementor\EventDispatcher;
 use IntegerNet\Solr\Implementor\Pagination;
 use Apache_Solr_Response;
+use IntegerNet\Solr\Indexer\IndexField;
 use IntegerNet\Solr\Query\Params\FilterQueryBuilder;
 use IntegerNet\Solr\Query\ParamsBuilder;
 use IntegerNet\Solr\Query\SearchParamsBuilder;
@@ -59,6 +61,10 @@ class SearchRequest implements Request, HasFilter
      * @var $foundNoResults bool
      */
     private $foundNoResults = false;
+    /**
+     * @var AttributeRepository
+     */
+    private $attributeRepository;
 
     /**
      * @param ResourceFacade $resource
@@ -68,8 +74,15 @@ class SearchRequest implements Request, HasFilter
      * @param EventDispatcher $eventDispatcher
      * @param LoggerInterface $logger
      */
-    public function __construct(ResourceFacade $resource, SearchQueryBuilder $queryBuilder, Pagination $pagination, FuzzyConfig $fuzzyConfig, EventDispatcher $eventDispatcher, LoggerInterface $logger)
-    {
+    public function __construct(
+        ResourceFacade $resource,
+        SearchQueryBuilder $queryBuilder,
+        Pagination $pagination,
+        FuzzyConfig $fuzzyConfig,
+        EventDispatcher $eventDispatcher,
+        LoggerInterface $logger,
+        AttributeRepository $attributeRepository
+    ) {
         $this->resource = $resource;
         $this->queryBuilder = $queryBuilder;
         $this->pagination = $pagination;
@@ -77,6 +90,7 @@ class SearchRequest implements Request, HasFilter
         $this->paramsBuilder = $queryBuilder->getParamsBuilder();
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = new LoggerDecorator($logger);
+        $this->attributeRepository = $attributeRepository;
     }
 
     /**
@@ -121,6 +135,7 @@ class SearchRequest implements Request, HasFilter
             if ($result->documents()->count() === 0) {
                 $result = $this->getBroaderResult($activeFilterAttributeCodes, $pageSize, $result);
             }
+            $result->updateDecimalFacetData();
             return $this->sliceResult($result);
         }
     }
@@ -227,6 +242,17 @@ class SearchRequest implements Request, HasFilter
             }
             if ($attributeCode == 'price' && isset($parentResult->facet_counts->facet_intervals->price_f)) {
                 $result->facet_counts->facet_intervals->price_f = $parentResult->facet_counts->facet_intervals->price_f;
+            }
+            $attribute = $this->attributeRepository->getAttributeByCode($attributeCode, null);
+            if ($attribute->getBackendType() == 'decimal') {
+                $indexField = new IndexField($attribute, $this->eventDispatcher);
+                $fieldName = $indexField->getFieldName();
+                if (isset($parentResult->facet_counts->facet_intervals->$fieldName)) {
+                    $result->facet_counts->facet_intervals->$fieldName = $parentResult->facet_counts->facet_intervals->$fieldName;
+                }
+                if (isset($parentResult->stats->stats_fields->$fieldName)) {
+                    $result->stats->stats_fields->$fieldName = $parentResult->stats->stats_fields->$fieldName;
+                }
             }
         }
         $this->eventDispatcher->dispatch('integernet_solr_after_search_request', array('result' => $result));

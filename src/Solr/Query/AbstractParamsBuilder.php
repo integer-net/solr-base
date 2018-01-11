@@ -10,6 +10,7 @@
 namespace IntegerNet\Solr\Query;
 use IntegerNet\Solr\Config\FuzzyConfig;
 use IntegerNet\Solr\Config\ResultsConfig;
+use IntegerNet\Solr\Exception;
 use IntegerNet\Solr\Indexer\IndexField;
 use IntegerNet\Solr\Query\Params\FilterQueryBuilder;
 use IntegerNet\Solr\Implementor\AttributeRepository;
@@ -100,7 +101,12 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
                     $attributeToReset .= '_f';
                     break;
                 default:
-                    $attributeToReset .= '_facet';
+                    $attribute = $this->attributeRespository->getAttributeByCode($attributeToReset, $this->storeId);
+                    if ($attribute->getBackendType() == 'decimal') {
+                        $attributeToReset .= '_f_mv';
+                    } else {
+                        $attributeToReset .= '_facet';
+                    }
             }
         }
         $params = array(
