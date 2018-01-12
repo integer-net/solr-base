@@ -274,8 +274,10 @@ class ResourceFacade
             $documents[] = $document;
         }
 
-        $response = $this->getSolrService($storeId)->addDocuments($documents);
-        $this->getSolrService($storeId)->commit();
+        /*
+         * Soft commit within 10000 ms
+         */
+        $response = $this->getSolrService($storeId)->addDocuments($documents, false, true, true, 10000);
         return $response;
     }
 
