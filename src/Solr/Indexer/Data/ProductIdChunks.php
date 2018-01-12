@@ -48,4 +48,18 @@ final class ProductIdChunks extends \ArrayIterator
         }
         return $productIdChunks;
     }
+
+    /**
+     * @return int Total number of products in all chunks (with associations)
+     */
+    public function totalCount()
+    {
+        return array_reduce(
+            $this->getArrayCopy(),
+            function ($count, ProductIdChunk $chunk) {
+                return $count + count($chunk);
+            },
+            0
+        );
+    }
 }

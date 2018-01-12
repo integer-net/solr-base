@@ -8,7 +8,7 @@ namespace IntegerNet\Solr\Indexer\Data;
  * @copyright  Copyright (c) 2016 integer_net GmbH (http://www.integer-net.de/)
  * @author     Andreas von Studnitz <avs@integer-net.de>
  */
-final class ProductIdChunk
+final class ProductIdChunk implements \Countable
 {
     /** @var  int[] */
     private $parentIds = array();
@@ -30,11 +30,19 @@ final class ProductIdChunk
     }
 
     /**
-     * @return int
+     * @return int Approximate size based on added products
      */
     public function getSize()
     {
         return $this->size;
+    }
+
+    /**
+     * @return int Real size without duplicates
+     */
+    public function count()
+    {
+        return count($this->getAllIds());
     }
 
     /**
