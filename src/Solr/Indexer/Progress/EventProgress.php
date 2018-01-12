@@ -26,7 +26,7 @@ class EventProgress implements ProgressUpdate
     {
         $this->eventStart = $eventStart;
         $this->steps = $steps;
-        $this->timestamp = $timestamp ?? microtime(true);
+        $this->timestamp = $timestamp ?: microtime(true);
     }
 
     public function getEventId()

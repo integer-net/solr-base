@@ -36,8 +36,8 @@ class EventStart implements ProgressUpdate
     public function __construct($description, $expectedSteps = 0, $eventId = null, $timestamp = null)
     {
         $this->description = $description;
-        $this->eventId = $eventId ?? sha1(uniqid('', true));
-        $this->startTime = $timestamp ?? microtime(true);
+        $this->eventId = $eventId ?: sha1(uniqid('', true));
+        $this->startTime = $timestamp ?: microtime(true);
         $this->expectedSteps = $expectedSteps;
         $this->status = new EventStatus($this->expectedSteps);
     }

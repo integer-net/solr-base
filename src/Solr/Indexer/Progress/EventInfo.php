@@ -27,8 +27,8 @@ class EventInfo implements ProgressUpdate
     public function __construct($description, $eventId = null, $timestamp = null)
     {
         $this->description = $description;
-        $this->eventId = $eventId ?? sha1(uniqid('', true));
-        $this->timestamp = $timestamp ?? microtime(true);
+        $this->eventId = $eventId ?: sha1(uniqid('', true));
+        $this->timestamp = $timestamp ?: microtime(true);
     }
 
     public function getEventId()

@@ -20,7 +20,7 @@ class EventFinish implements ProgressUpdate
     public function __construct(EventStart $eventStart, $timestamp = null)
     {
         $this->eventStart = $eventStart;
-        $this->timestamp = $timestamp ?? microtime(true);
+        $this->timestamp = $timestamp ?: microtime(true);
     }
 
     public function getEventId()

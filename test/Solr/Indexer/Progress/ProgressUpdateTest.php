@@ -17,8 +17,8 @@ class ProgressUpdateTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals(
             [
-                "2001-02-03T04:05:06.000+00:00\t$eventId\t$eventDescription\t0%\t0ms",
-                "2001-02-03T04:05:06.050+00:00\t$eventId\t$eventDescription\t100%\t50ms",
+                "2001-02-03T04:05:06.000000+00:00\t$eventId\t$eventDescription\t0%\t0ms",
+                "2001-02-03T04:05:06.050000+00:00\t$eventId\t$eventDescription\t100%\t50ms",
             ],
             $handler->updatesAsString
         );
@@ -39,10 +39,10 @@ class ProgressUpdateTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals(
             [
-                "2001-02-03T04:05:06.000+00:00\t$eventId\t$eventDescription\t0%\t0ms",
-                "2001-02-03T04:05:06.000+00:00\t$eventId\t$eventDescription\t50%\t0ms",
-                "2001-02-03T04:05:06.010+00:00\t$eventId\t$eventDescription\t100%\t10ms",
-                "2001-02-03T04:05:06.010+00:00\t$eventId\t$eventDescription\t100%\t10ms",
+                "2001-02-03T04:05:06.000000+00:00\t$eventId\t$eventDescription\t0%\t0ms",
+                "2001-02-03T04:05:06.000000+00:00\t$eventId\t$eventDescription\t50%\t0ms",
+                "2001-02-03T04:05:06.010000+00:00\t$eventId\t$eventDescription\t100%\t10ms",
+                "2001-02-03T04:05:06.010000+00:00\t$eventId\t$eventDescription\t100%\t10ms",
             ],
             $handler->updatesAsString
         );

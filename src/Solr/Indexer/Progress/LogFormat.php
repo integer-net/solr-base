@@ -25,7 +25,7 @@ class LogFormat
         return implode(
             "\t",
             [
-                self::formatDateTimeWithMilliseconds($this->progressUpdate->getTimestamp()),
+                self::formatDateTimeWithMicroseconds($this->progressUpdate->getTimestamp()),
                 $this->progressUpdate->getEventId(),
                 $this->progressUpdate->getDescription(),
                 $this->progressUpdate->getPercentageCompleted() . "%",
@@ -38,8 +38,9 @@ class LogFormat
      * @param int|float $timestamp
      * @return string
      */
-    private static function formatDateTimeWithMilliseconds($timestamp)
+    private static function formatDateTimeWithMicroseconds($timestamp)
     {
-        return \DateTime::createFromFormat('U.u', number_format($timestamp, 6, '.', ''))->format(DATE_RFC3339_EXTENDED);
+        // DATE_RFC3339_EXTENDED but with µs instead of ms for PHP 5.6 compatibility
+        return \DateTime::createFromFormat('U.u', number_format($timestamp, 6, '.', ''))->format('Y-m-d\TH:i:s.uP');
     }
 }
