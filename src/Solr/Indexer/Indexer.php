@@ -60,4 +60,29 @@ interface Indexer
      * @param int $storeId
      */
     public function clearIndex($storeId);
+
+    /**
+     * Check if swap configuration is valid to reindex given stores
+     * (e.g. all stores with same swap configuration must be reindexed at once)
+     *
+     * @param $restrictToStoreIds
+     */
+    public function checkSwapCoresConfiguration($restrictToStoreIds);
+
+    /**
+     * Swap current core with shadow core (for all given stores)
+     *
+     * @param null|int[] $restrictToStoreIds
+     */
+    public function swapCores($restrictToStoreIds);
+
+    /**
+     * Use the shadow core for subsequent indexing
+     */
+    public function activateSwapCore();
+
+    /**
+     * Do not use the shadow core for subsequent indexing
+     */
+    public function deactivateSwapCore();
 }

@@ -591,8 +591,7 @@ class ProductIndexer implements Indexer
     }
 
     /**
-     * @deprecated Not part of the Indexer interface, public method will be removed in 4.0.0. Use resource directly instead.
-     * @see \IntegerNet\Solr\Resource\ResourceFacade
+     * Use the shadow core for subsequent indexing
      */
     public function activateSwapCore()
     {
@@ -601,8 +600,7 @@ class ProductIndexer implements Indexer
     }
 
     /**
-     * @deprecated Not part of the Indexer interface, public method will be removed in 4.0.0. Use resource directly instead.
-     * @see \IntegerNet\Solr\Resource\ResourceFacade
+     * Do not use the shadow core for subsequent indexing
      */
     public function deactivateSwapCore()
     {
@@ -611,8 +609,8 @@ class ProductIndexer implements Indexer
     }
 
     /**
-     * @deprecated Not part of the Indexer interface, public method will be removed in 4.0.0. Use resource directly instead.
-     * @see \IntegerNet\Solr\Resource\ResourceFacade
+     * Swap current core with shadow core (for all given stores)
+     *
      * @param null|int[] $restrictToStoreIds
      */
     public function swapCores($restrictToStoreIds)
@@ -626,8 +624,9 @@ class ProductIndexer implements Indexer
     }
 
     /**
-     * @deprecated Not part of the Indexer interface, public method will be removed in 4.0.0. Use resource directly instead.
-     * @see \IntegerNet\Solr\Resource\ResourceFacade
+     * Check if swap configuration is valid to reindex given stores
+     * (e.g. all stores with same swap configuration must be reindexed at once)
+     *
      * @param $restrictToStoreIds
      */
     public function checkSwapCoresConfiguration($restrictToStoreIds)
