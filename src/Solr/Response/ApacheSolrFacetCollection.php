@@ -24,7 +24,16 @@ final class ApacheSolrFacetCollection extends \ArrayIterator implements FacetCol
             $facet = ApacheSolrFacet::fromField($field, $counts);
             $facets[$facet->name()] = $facet;
         }
-        $facets['price'] = ApacheSolrFacet::fromInterval('price', $facetCounts->facet_intervals->price_f);
+        foreach ($facetCounts->facet_intervals as $identifier => $intervalFacets) {
+            if (substr($identifier, -2) == '_f') {
+                $attributeCode = substr($identifier, 0, -2);
+            } elseif (substr($identifier, -5) == '_f_mv') {
+                $attributeCode = substr($identifier, 0, -5);
+            } else {
+                continue;
+            }
+            $facets[$attributeCode] = ApacheSolrFacet::fromInterval($attributeCode, $intervalFacets);
+        }
         return new static($facets);
     }
     /**

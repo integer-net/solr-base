@@ -100,7 +100,12 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
                     $attributeToReset .= '_f';
                     break;
                 default:
-                    $attributeToReset .= '_facet';
+                    $attribute = $this->attributeRespository->getAttributeByCode($attributeToReset, $this->storeId);
+                    if ($attribute->getBackendType() == 'decimal') {
+                        $attributeToReset .= '_f_mv';
+                    } else {
+                        $attributeToReset .= '_facet';
+                    }
             }
         }
         $params = array(
@@ -228,10 +233,18 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
         $resultsConfig = $this->resultsConfig;
 
         $params['fl'] = 'result_html_list_nonindex,result_html_grid_nonindex,score,sku_s,name_s,product_id';
-        $params['facet.interval'] = 'price_f';
+        $params['facet.interval'] = [];
         $params['stats'] = 'true';
-        $params['stats.field'] = 'price_f';
+        $params['stats.field'] = [];
 
+        foreach ($this->attributeRespository->getFilterableInSearchAttributes($this->storeId) as $filterableAttribute) {
+            if ($filterableAttribute->getBackendType() == 'decimal') {
+                $indexField = new IndexField($filterableAttribute, $this->eventDispatcher);
+                $params['stats.field'][] = $indexField->getFieldName();
+                $params['facet.interval'][] = $indexField->getFieldName();
+                $params['f.' . $indexField->getFieldName() . '.facet.interval.set'] = ['(*,*)'];
+            }
+        }
 
         if (($priceStepsize = $resultsConfig->getPriceStepSize())
             && ($maxPrice = $resultsConfig->getMaxPrice())
@@ -263,8 +276,8 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
                 $lowerBorder = $upperBorder;
             }
             $params['f.price_f.facet.interval.set'][] = sprintf('(%f,%s]', $lowerBorder, '*');
-            return $params;
-        }return $params;
+        }
+        return $params;
     }
 
 }

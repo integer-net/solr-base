@@ -24,7 +24,7 @@ class AttributeRepositoryStub implements AttributeRepository
      */
     public function getSearchableAttributes($storeId)
     {
-        return [AttributeStub::sortableString('attribute1'), AttributeStub::sortableString('attribute2')];
+        return [AttributeStub::sortableDecimal('price'), AttributeStub::sortableString('attribute1'), AttributeStub::sortableString('attribute2')];
     }
 
     /**
@@ -34,7 +34,7 @@ class AttributeRepositoryStub implements AttributeRepository
      */
     public function getFilterableAttributes($storeId, $useAlphabeticalSearch = true)
     {
-        return [AttributeStub::sortableString('attribute1'), AttributeStub::sortableString('attribute2')];
+        return [AttributeStub::sortableDecimal('price'), AttributeStub::sortableString('attribute1'), AttributeStub::sortableString('attribute2')];
     }
 
     /**
@@ -44,7 +44,7 @@ class AttributeRepositoryStub implements AttributeRepository
      */
     public function getFilterableInSearchAttributes($storeId, $useAlphabeticalSearch = true)
     {
-        return [AttributeStub::sortableString('attribute1'), AttributeStub::sortableString('attribute2')];
+        return [AttributeStub::sortableDecimal('price'), AttributeStub::sortableString('attribute1'), AttributeStub::sortableString('attribute2')];
     }
 
     /**

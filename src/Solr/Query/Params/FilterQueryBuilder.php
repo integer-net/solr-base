@@ -153,23 +153,34 @@ class FilterQueryBuilder
      */
     public function addPriceRangeFilterByMinMax($minPrice, $maxPrice = 0.0)
     {
-        if (is_array($minPrice) && is_array($maxPrice)) {
-            if (sizeof($minPrice) != sizeof($maxPrice)) {
-                throw new \Exception('Arrays of min and max prices must be of same size.');
-            }
-            foreach($minPrice as $index => $void) {
+        return $this->addRangeFilterByMinMax('price_f', $minPrice, $maxPrice);
+    }
 
-                $this->addPriceRangeFilterByMinMax($minPrice[$index], $maxPrice[$index]);
+    /**
+     * @param string $facetName
+     * @param float|float[] $minValue
+     * @param float|float[] $maxValue
+     * @return $this
+     * @throws \Exception
+     */
+    public function addRangeFilterByMinMax($facetName, $minValue, $maxValue = 0.0)
+    {
+        if (is_array($minValue) && is_array($maxValue)) {
+            if (sizeof($minValue) != sizeof($maxValue)) {
+                throw new \Exception('Arrays of min and max values must be of same size.');
+            }
+            foreach ($minValue as $index => $void) {
+                $this->addRangeFilterByMinMax($facetName, $minValue[$index], $maxValue[$index]);
             }
             return $this;
         }
-        if (!is_numeric($minPrice)) {
+        if (!is_numeric($minValue)) {
             return $this;
         }
-        if ($maxPrice) {
-            $this->_addFilter('price_f', sprintf('[%f TO %f]', $minPrice, $maxPrice));
+        if ($maxValue) {
+            $this->_addFilter($facetName, sprintf('[%f TO %f]', $minValue, $maxValue));
         } else {
-            $this->_addFilter('price_f', sprintf('[%f TO *]', $minPrice));
+            $this->_addFilter($facetName, sprintf('[%f TO *]', $minValue));
         }
         return $this;
     }

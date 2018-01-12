@@ -38,6 +38,11 @@ class AttributeStub implements Attribute
         return new self($name, $name, 0, new SourceStub(), 'string', true, true, 'text', true, 'text');
     }
 
+    public static function sortableDecimal($name)
+    {
+        return new self($name, $name, 0, new SourceStub(), 'decimal', false, true, 'text', true, 'text');
+    }
+
     public static function filterable($name, array $options)
     {
         return new self($name, $name, 0, new SourceStub($options), 'int', true, false, 'int', false, 'text');

@@ -42,5 +42,12 @@ interface Response
      */
     public function slice($from, $length);
 
+    /**
+     * Writes min and max value of decimal fields from Statistics to Facet area
+     *
+     * @return Response
+     */
+    public function updateDecimalFacetData();
+
 }
 \class_alias(Response::class, \IntegerNet\Solr\Resource\SolrResponse::class, false);

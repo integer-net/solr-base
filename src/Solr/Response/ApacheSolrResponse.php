@@ -264,5 +264,25 @@ class ApacheSolrResponse implements Response
         return $result;
     }
 
+    public function updateDecimalFacetData()
+    {
+        if (!isset($this->apacheSolrResponse->stats->stats_fields)) {
+            return;
+        }
+        foreach ($this->apacheSolrResponse->stats->stats_fields as $fieldName => $statsField) {
+            $minValue = $statsField->min;
+            $maxValue = $statsField->max;
+
+            if (isset($this->apacheSolrResponse->facet_counts->facet_intervals->{$fieldName})) {
+                $facetInterval = $this->apacheSolrResponse->facet_counts->facet_intervals->{$fieldName};
+                $oldFacetIdentifier = '(*,*)';
+                $newFacetIdentifier = '(' . $minValue . ',' . $maxValue . ']';
+                if (isset($facetInterval->$oldFacetIdentifier)) {
+                    $facetInterval->$newFacetIdentifier = $facetInterval->$oldFacetIdentifier;
+                    unset($facetInterval->$oldFacetIdentifier);
+                }
+            }
+        }
+    }
 }
 \class_alias(ApacheSolrResponse::class, \IntegerNet\Solr\Resource\ResponseDecorator::class, false);

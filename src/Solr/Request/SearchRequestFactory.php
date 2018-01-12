@@ -85,7 +85,8 @@ class SearchRequestFactory extends BaseRequestFactory
             $this->getPagination(),
             $this->getFuzzyConfig(),
             $this->getEventDispatcher(),
-            $this->getLogger()
+            $this->getLogger(),
+            $this->getAttributeRepository()
         );
     }
 
