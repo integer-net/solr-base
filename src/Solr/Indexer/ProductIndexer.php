@@ -110,6 +110,7 @@ class ProductIndexer implements Indexer
     public function addProgressHandler(ProgressHandler $handler)
     {
         $this->progressHandlers[] = $handler;
+        $this->progressDispatcher = null;
     }
 
     /**
@@ -131,7 +132,6 @@ class ProductIndexer implements Indexer
         $sliceId = null,
         $totalNumberSlices = null
     ) {
-        $this->progressDispatcher = new ProgressDispatcher($this->progressHandlers);
         if (is_null($productIds) && is_null($sliceId)) {
             $this->checkSwapCoresConfiguration($restrictToStoreIds);
         }
@@ -543,7 +543,7 @@ class ProductIndexer implements Indexer
         $productIterator = $this->productRepository->getProductsInChunks($storeId, $chunks);
         $productIterator->setPageCallback([$documentQueue, 'flush']);
 
-        $this->progressDispatcher->start(
+        $this->getProgressDispatcher()->start(
             "Create " . self::CONTENT_TYPE . " index for store $storeId",
             $chunks->totalCount()
         );
@@ -557,16 +557,16 @@ class ProductIndexer implements Indexer
             } else {
                 $idsForDeletion[] = $this->_getSolrId($product);
             }
-            $this->progressDispatcher->advance();
+            $this->getProgressDispatcher()->advance();
         }
-        $this->progressDispatcher->finish();
+        $this->getProgressDispatcher()->finish();
 
         foreach ($productIds as $productId => $value) {
             $idsForDeletion[] = $this->_getSolrIdByProductIdAndStoreId($productId, $storeId);
         }
 
         if (!$emptyIndex && count($idsForDeletion)) {
-            $this->progressDispatcher->start(
+            $this->getProgressDispatcher()->start(
                 sprintf(
                     'Delete %d removed %s entries for store %s',
                     count($idsForDeletion),
@@ -575,7 +575,7 @@ class ProductIndexer implements Indexer
                 )
             );
             $this->_getResource()->deleteByMultipleIds($storeId, $idsForDeletion);
-            $this->progressDispatcher->finish();
+            $this->getProgressDispatcher()->finish();
         }
         return $storeId;
     }
@@ -585,9 +585,9 @@ class ProductIndexer implements Indexer
      */
     public function clearIndex($storeId)
     {
-        $this->progressDispatcher->start("Clear " . self::CONTENT_TYPE . " index for store $storeId");
+        $this->getProgressDispatcher()->start("Clear " . self::CONTENT_TYPE . " index for store $storeId");
         $this->_getResource()->deleteAllDocuments($storeId, self::CONTENT_TYPE);
-        $this->progressDispatcher->finish();
+        $this->getProgressDispatcher()->finish();
     }
 
     /**
@@ -595,7 +595,7 @@ class ProductIndexer implements Indexer
      */
     public function activateSwapCore()
     {
-        $this->progressDispatcher->info('Activate swap cores');
+        $this->getProgressDispatcher()->info('Activate swap cores');
         $this->_getResource()->setUseSwapIndex();
     }
 
@@ -604,7 +604,7 @@ class ProductIndexer implements Indexer
      */
     public function deactivateSwapCore()
     {
-        $this->progressDispatcher->info('Deactivate swap cores');
+        $this->getProgressDispatcher()->info('Deactivate swap cores');
         $this->_getResource()->setUseSwapIndex(false);
     }
 
@@ -615,12 +615,12 @@ class ProductIndexer implements Indexer
      */
     public function swapCores($restrictToStoreIds)
     {
-        $this->progressDispatcher->start(
+        $this->getProgressDispatcher()->start(
             'Swap Solr cores' . ($restrictToStoreIds ? ' for stores ' . implode(',', $restrictToStoreIds) : '')
             . ' (if swap core is configured)'
         );
         $this->_getResource()->swapCores($restrictToStoreIds);
-        $this->progressDispatcher->finish();
+        $this->getProgressDispatcher()->finish();
     }
 
     /**
@@ -634,5 +634,12 @@ class ProductIndexer implements Indexer
         return $this->_getResource()->checkSwapCoresConfiguration($restrictToStoreIds);
     }
 
+    private function getProgressDispatcher(): ProgressDispatcher
+    {
+        if ($this->progressDispatcher === null) {
+            $this->progressDispatcher = new ProgressDispatcher($this->progressHandlers);
+        }
+        return $this->progressDispatcher;
+    }
 
 }
