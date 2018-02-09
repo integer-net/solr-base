@@ -21,7 +21,7 @@ class SwapConfigCheck
             $swapCoreConfig->getUsedSwapCoreIds()
         );
         $this->checkIfSwappingIsActiveForAllStoresWithSameCore(
-            $swapCoreConfig->getCoreIdsNotToSwap(),
+            $swapCoreConfig->getCoreIdsToSwap(),
             $swapCoreConfig->getCoreIdsNotToSwap()
         );
 

@@ -149,6 +149,13 @@ class SwapCoreConfigurationTest extends TestCase
     public static function dataValidConfiguration()
     {
         return [
+            'Swapping not enabled for all stores with same configuration' => [
+                [
+                    1 => self::configWithoutSwap('core0', 'core1'),
+                    2 => self::configWithoutSwap('core0', 'core1'),
+                ],
+                self::DO_NOT_RESTRICT_STORE_IDS,
+            ],
             'Swapping enabled for all stores with same configuration' => [
                 [
                     1 => self::configWithSwap('core0', 'core1'),
