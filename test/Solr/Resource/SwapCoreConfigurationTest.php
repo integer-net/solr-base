@@ -134,7 +134,15 @@ class SwapCoreConfigurationTest extends TestCase
                 ],
                 [1],
                 'Call Error: All Stores using the same Swap Configuration must be reindexed at the same Time.'
-            ]
+            ],
+            'Swap core used as main core in other store' => [
+                [
+                    1 => self::configWithSwap('core0', 'core1'),
+                    2 => self::configWithSwap('core1', 'core2')
+                ],
+                self::DO_NOT_RESTRICT_STORE_IDS,
+                'Configuration Error: A Swap Core must not be used as Main Core in other Store View'
+            ],
         ];
     }
 

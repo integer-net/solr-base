@@ -14,30 +14,18 @@ class SwapConfigCheck
      */
     public function checkSwapCoresConfiguration(array $allStoresConfig, $restrictStoreIdsToSwap = null)
     {
-        $coresToSwap = array();
-        $coresNotToSwap = array();
-        $swapCoreNamesByCoreAndStore = array();
+        $swapCoreConfig = new SwapCoreConfig($allStoresConfig);
 
-        foreach ($allStoresConfig as $storeId => $storeConfig) {
+        $this->checkIfSwapCoreIsUsedAsMainCore(
+            $swapCoreConfig->getMainCoreIds(),
+            $swapCoreConfig->getUsedSwapCoreIds()
+        );
+        $this->checkIfSwappingIsActiveForAllStoresWithSameCore(
+            $swapCoreConfig->getCoreIdsNotToSwap(),
+            $swapCoreConfig->getCoreIdsNotToSwap()
+        );
 
-            if ($storeId == 0 || !$storeConfig->getGeneralConfig()->isActive()) {
-                continue;
-            }
-
-            /** @var Config $storeConfig */
-            $coreId = $storeConfig->getServerConfig()->getServerInfo();
-
-            if ($storeConfig->getIndexingConfig()->isSwapCores()) {
-                $coresToSwap[$storeId] = $coreId;
-                $swapCoreNamesByCoreAndStore[$coreId][$storeId] = $storeConfig->getServerConfig()->getSwapCore();
-            } else {
-                $coresNotToSwap[$storeId] = $coreId;
-            }
-        }
-
-        $this->checkIfSwappingIsActiveForAllStoresWithSameCore($coresToSwap, $coresNotToSwap);
-
-        foreach ($swapCoreNamesByCoreAndStore as $coreId => $swapCoreNamesByStore) {
+        foreach ($swapCoreConfig->getSwapCoreNamesByCoreAndStore() as $swapCoreNamesByStore) {
             $this->checkIfDifferentSwapCoresAreUsed($swapCoreNamesByStore);
             if (null !== $restrictStoreIdsToSwap) {
                 $this->checkIfStoresWithSharedConfigAreSwappedTogether($restrictStoreIdsToSwap,
@@ -76,4 +64,12 @@ class SwapConfigCheck
             );
         }
     }
+
+    private function checkIfSwapCoreIsUsedAsMainCore($mainCoreIds, $usedSwapCoreIds)
+    {
+        if (count(array_intersect($mainCoreIds, $usedSwapCoreIds))) {
+            throw new Exception('Configuration Error: A Swap Core must not be used as Main Core in other Store View.');
+        }
+    }
+
 }
