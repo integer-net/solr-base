@@ -149,18 +149,24 @@ class ResourceFacade
             }
         }
 
-        if (sizeof(array_intersect($coresToSwap, $coresNotToSwap))) {
-            throw new Exception('Configuration Error: Activate Core Swapping for all Store Views using the same Solr Core.');
+        if (count(array_intersect($coresToSwap, $coresNotToSwap))) {
+            throw new Exception(
+                'Configuration Error: Activate Core Swapping for all Store Views using the same Solr Core.'
+            );
         }
 
         foreach ($swapCoreNames as $swapCoreNamesByCore) {
-            if (sizeof(array_unique($swapCoreNamesByCore)) > 1) {
-                throw new Exception('Configuration Error: A Core must swap with the same Core for all Store Views using it.');
+            if (count(array_unique($swapCoreNamesByCore)) > 1) {
+                throw new Exception(
+                    'Configuration Error: A Core must swap with the same Core for all Store Views using it.'
+                );
             }
-            if (!is_null($restrictToStoreIds)) {
-                if (sizeof(array_intersect($restrictToStoreIds, array_keys($swapCoreNamesByCore)))) {
-                    if (sizeof(array_diff(array_keys($swapCoreNamesByCore), $restrictToStoreIds))) {
-                        throw new Exception('Call Error: All Stores using the same Swap Configuration must be reindexed at the same Time.');
+            if (null !== $restrictToStoreIds) {
+                if (count(array_intersect($restrictToStoreIds, array_keys($swapCoreNamesByCore)))) {
+                    if (count(array_diff(array_keys($swapCoreNamesByCore), $restrictToStoreIds))) {
+                        throw new Exception(
+                            'Call Error: All Stores using the same Swap Configuration must be reindexed at the same Time.'
+                        );
                     }
                 }
             }
