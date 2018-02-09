@@ -45,7 +45,7 @@ class SwapCoreConfigurationTest extends TestCase
         return ServerConfigBuilder::defaultConfig()->withCore($core)->withSwapCore($swapCore);
     }
 
-    private static function configWithSwap($core, $swapCore): Config
+    private static function configWithSwap($core, $swapCore)
     {
         return self::configStub(
             self::generalConfigEnabled(),
@@ -54,7 +54,7 @@ class SwapCoreConfigurationTest extends TestCase
         );
     }
 
-    private static function configWithoutSwap($core, $swapCore): Config
+    private static function configWithoutSwap($core, $swapCore)
     {
         return self::configStub(
             self::generalConfigEnabled(),
@@ -85,7 +85,7 @@ class SwapCoreConfigurationTest extends TestCase
     public function testThrowExceptionForInvalidConfiguration(
         array $invalidConfiguration,
         array $restrictToStoreIds = null,
-        string $expectedException
+        $expectedException
     ) {
         $resource = new ResourceFacade($invalidConfiguration);
         $this->expectException(\IntegerNet\Solr\Exception::class);
