@@ -124,47 +124,7 @@ class ResourceFacade
      */
     public function checkSwapCoresConfiguration($restrictToStoreIds = null)
     {
-        $coresToSwap = array();
-        $coresNotToSwap = array();
-        $swapCoreNames = array();
-
-        foreach ($this->_config as $storeId => $storeConfig) {
-
-            if ($storeId == 0) {
-                continue;
-            }
-
-            /** @var Config $storeConfig */
-            $solrServerInfo = $storeConfig->getServerConfig()->getServerInfo();
-
-            if (!$storeConfig->getGeneralConfig()->isActive()) {
-                continue;
-            }
-
-            if ($storeConfig->getIndexingConfig()->isSwapCores()) {
-                $coresToSwap[$storeId] = $solrServerInfo;
-                $swapCoreNames[$solrServerInfo][$storeId] = $storeConfig->getServerConfig()->getSwapCore();
-            } else {
-                $coresNotToSwap[$storeId] = $solrServerInfo;
-            }
-        }
-
-        if (sizeof(array_intersect($coresToSwap, $coresNotToSwap))) {
-            throw new Exception('Configuration Error: Activate Core Swapping for all Store Views using the same Solr Core.');
-        }
-
-        foreach ($swapCoreNames as $swapCoreNamesByCore) {
-            if (sizeof(array_unique($swapCoreNamesByCore)) > 1) {
-                throw new Exception('Configuration Error: A Core must swap with the same Core for all Store Views using it.');
-            }
-            if (!is_null($restrictToStoreIds)) {
-                if (sizeof(array_intersect($restrictToStoreIds, array_keys($swapCoreNamesByCore)))) {
-                    if (sizeof(array_diff(array_keys($swapCoreNamesByCore), $restrictToStoreIds))) {
-                        throw new Exception('Call Error: All Stores using the same Swap Configuration must be reindexed at the same Time.');
-                    }
-                }
-            }
-        }
+        (new SwapConfigCheck())->checkSwapCoresConfiguration($this->_config, $restrictToStoreIds);
     }
 
     /**
