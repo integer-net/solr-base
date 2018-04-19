@@ -243,6 +243,9 @@ class SearchRequest implements Request, HasFilter
             if ($attributeCode == 'price' && isset($parentResult->facet_counts->facet_intervals->price_f)) {
                 $result->facet_counts->facet_intervals->price_f = $parentResult->facet_counts->facet_intervals->price_f;
             }
+            if ($attributeCode == 'category') {
+                continue;
+            }
             $attribute = $this->attributeRepository->getAttributeByCode($attributeCode, null);
             if ($attribute->getBackendType() == 'decimal') {
                 $indexField = new IndexField($attribute, $this->eventDispatcher);
