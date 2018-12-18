@@ -37,8 +37,8 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
      * @param Query $expectedQuery
      */
     public function testQuery($storeId, ResultsConfig $resultsConfig, FuzzyConfig $fuzzyConfig,
-                              FilterQueryBuilder $filterQueryBuilder, Pagination $paginationStub,
-                              SearchString $searchString, Query $expectedQuery)
+        FilterQueryBuilder $filterQueryBuilder, Pagination $paginationStub,
+        SearchString $searchString, Query $expectedQuery)
     {
         /** @var \PHPUnit_Framework_MockObject_MockObject|EventDispatcher $eventDispatcherMock */
         $eventDispatcherMock = $this->getMockForAbstractClass(EventDispatcher::class);
@@ -87,21 +87,22 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
             'mm' => '1',
         ];
         $defaultResultConfig = ResultConfigBuilder::defaultConfig()->build();
+        $attributeRepositoryStub = new AttributeRepositoryStub();
         $allData = [
             'default' => [$defaultStoreId, $defaultResultConfig, FuzzyConfigBuilder::defaultConfig()->build(),
-                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig), $defaultPagination, new SearchString('foo bar'),
+                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig, $attributeRepositoryStub, $defaultStoreId), $defaultPagination, new SearchString('foo bar'),
                 new Query($defaultStoreId, 'foo bar~0.7', 0, PaginationStub::DEFAULT_PAGESIZE, $defaultExpectedParams)
             ],
             'default_spaces' => [$defaultStoreId, $defaultResultConfig, FuzzyConfigBuilder::defaultConfig()->build(),
-                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig), $defaultPagination, new SearchString('foo   bar'),
+                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig, $attributeRepositoryStub, $defaultStoreId), $defaultPagination, new SearchString('foo   bar'),
                 new Query($defaultStoreId, 'foo bar~0.7', 0, PaginationStub::DEFAULT_PAGESIZE, $defaultExpectedParams)
             ],
             'default_numbers' => [$defaultStoreId, $defaultResultConfig, FuzzyConfigBuilder::defaultConfig()->build(),
-                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig), $defaultPagination, new SearchString('foo 1 bar   2'),
+                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig, $attributeRepositoryStub, $defaultStoreId), $defaultPagination, new SearchString('foo 1 bar   2'),
                 new Query($defaultStoreId, 'foo1 bar2~0.7', 0, PaginationStub::DEFAULT_PAGESIZE, $defaultExpectedParams)
             ],
             'alternative' => [1, ResultConfigBuilder::alternativeConfig()->build(), FuzzyConfigBuilder::inactiveConfig()->build(),
-                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig), PaginationStub::alternativePagination(), new SearchString('"foo bar"'),
+                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig, $attributeRepositoryStub, $defaultStoreId), PaginationStub::alternativePagination(), new SearchString('"foo bar"'),
                 new Query(1, 'attribute1_t:""foo bar""~100^0 OR attribute2_t:""foo bar""~100^0 OR category_name_t_mv:""foo bar""~100^1', 0, 24, [
                         'q.op' => ResultsConfig::SEARCH_OPERATOR_OR,
                         'fq' => "content_type:product AND store_id:1 AND is_visible_in_search_i:1",
@@ -114,7 +115,7 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
                     ] + $defaultExpectedParams)
             ],
             'filters' => [$defaultStoreId, $defaultResultConfig, FuzzyConfigBuilder::defaultConfig()->build(),
-                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig)
+                FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig, $attributeRepositoryStub, $defaultStoreId)
                     ->addAttributeFilter(AttributeStub::sortableString('attribute1'), 'blue')
                     ->addCategoryFilter(42)
                     ->addPriceRangeFilterByMinMax(13,37),

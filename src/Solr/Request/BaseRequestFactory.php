@@ -61,7 +61,11 @@ abstract class BaseRequestFactory implements RequestFactory
     {
         $this->resource = $resource;
         $this->attributeRepository = $applicationContext->getAttributeRepository();
-        $this->filterQueryBuilder = new FilterQueryBuilder($applicationContext->getResultsConfig());
+        $this->filterQueryBuilder = new FilterQueryBuilder(
+            $applicationContext->getResultsConfig(),
+            $applicationContext->getAttributeRepository(),
+            $storeId
+        );
         $this->pagination = $applicationContext->hasPagination() ? $applicationContext->getPagination()
             : new SinglePage($applicationContext->getAutosuggestConfig()->getMaxNumberProductSuggestions());
         $this->resultsConfig = $applicationContext->getResultsConfig();
