@@ -12,6 +12,7 @@ namespace IntegerNet\Solr\Query\Params;
 
 use IntegerNet\Solr\Config\ResultsConfig;
 use IntegerNet\Solr\Implementor\Attribute;
+use IntegerNet\Solr\Implementor\AttributeRepository;
 
 class FilterQueryBuilder
 {
@@ -19,6 +20,10 @@ class FilterQueryBuilder
      * @var $resultsConfig ResultsConfig
      */
     private $resultsConfig;
+    /**
+     * @var AttributeRepository
+     */
+    private $attributeRepository;
     /**
      * @var $isCategoryPage bool
      */
@@ -31,18 +36,30 @@ class FilterQueryBuilder
      * @var $filters array
      */
     private $filters = array();
+    /**
+     * @var int
+     */
+    private $storeId;
 
     /**
      * @param ResultsConfig $resultsConfig
      */
-    public function __construct(ResultsConfig $resultsConfig)
-    {
+    public function __construct(
+        ResultsConfig $resultsConfig,
+        AttributeRepository $attributeRepository,
+        $storeId
+    ) {
         $this->resultsConfig = $resultsConfig;
+        $this->attributeRepository = $attributeRepository;
+        $this->storeId = $storeId;
     }
 
-    public static function noFilterQueryBuilder(ResultsConfig $resultsConfig)
-    {
-        return new self($resultsConfig);
+    public static function noFilterQueryBuilder(
+        ResultsConfig $resultsConfig,
+        AttributeRepository $attributeRepository,
+        $storeId
+    ) {
+        return new self($resultsConfig, $attributeRepository, $storeId);
     }
 
     /**
@@ -80,6 +97,12 @@ class FilterQueryBuilder
      */
     public function addAttributeFilter(Attribute $attribute, $value)
     {
+        if (!$this->isFilterableAttribute($attribute)) {
+            return $this;
+        }
+        if (!$this->isValidAttributeFilterValue($value)) {
+            return $this;
+        }
         $this->_addFilter($attribute->getAttributeCode() . '_facet', $value);
         return $this;
     }
@@ -242,4 +265,42 @@ class FilterQueryBuilder
         $this->filters[$facetName] = $value;
     }
 
+    /**
+     * @param Attribute $attribute
+     * @return bool
+     */
+    private function isFilterableAttribute(Attribute $attribute)
+    {
+        if ($this->isCategoryPage) {
+            $filterableAttributes = $this->attributeRepository->getFilterableInCatalogAttributes($this->storeId);
+        } else {
+            $filterableAttributes = $this->attributeRepository->getFilterableInSearchAttributes($this->storeId);
+        }
+        foreach ($filterableAttributes as $filterableAttribute) {
+            if ($filterableAttribute->getAttributeCode() == $attribute->getAttributeCode()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Value must be an option ID or an array of option IDs
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    private function isValidAttributeFilterValue($value)
+    {
+        if (is_array($value)) {
+            foreach ($value as $subValue) {
+                if (!$this->isValidAttributeFilterValue($subValue)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return ctype_digit($value);
+    }
 }
