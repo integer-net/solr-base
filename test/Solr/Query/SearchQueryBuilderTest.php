@@ -88,6 +88,7 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
         ];
         $defaultResultConfig = ResultConfigBuilder::defaultConfig()->build();
         $attributeRepositoryStub = new AttributeRepositoryStub();
+
         $allData = [
             'default' => [$defaultStoreId, $defaultResultConfig, FuzzyConfigBuilder::defaultConfig()->build(),
                 FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig, $attributeRepositoryStub, $defaultStoreId), $defaultPagination, new SearchString('foo bar'),
@@ -116,12 +117,12 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
             ],
             'filters' => [$defaultStoreId, $defaultResultConfig, FuzzyConfigBuilder::defaultConfig()->build(),
                 FilterQueryBuilder::noFilterQueryBuilder($defaultResultConfig, $attributeRepositoryStub, $defaultStoreId)
-                    ->addAttributeFilter(AttributeStub::sortableString('attribute1'), 'blue')
+                    ->addAttributeFilter(AttributeStub::sortableString('attribute1'), '4')
                     ->addCategoryFilter(42)
                     ->addPriceRangeFilterByMinMax(13,37),
                 $defaultPagination, new SearchString('foo bar'),
                 new Query($defaultStoreId, 'foo bar~0.7', 0, PaginationStub::DEFAULT_PAGESIZE, [
-                        'fq' => 'content_type:product AND store_id:0 AND is_visible_in_search_i:1 AND attribute1_facet:blue AND category:42 AND price_f:[13.000000 TO 37.000000]'
+                        'fq' => 'content_type:product AND store_id:0 AND is_visible_in_search_i:1 AND attribute1_facet:4 AND category:42 AND price_f:[13.000000 TO 37.000000]'
                     ] + $defaultExpectedParams)
             ]
         ];
