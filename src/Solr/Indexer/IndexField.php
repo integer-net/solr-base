@@ -67,7 +67,7 @@ class IndexField
      * @param string $textFieldSuffix
      * @return string
      */
-    private function getFieldNameWithTextFieldSuffix(string $textFieldSuffix)
+    private function getFieldNameWithTextFieldSuffix($textFieldSuffix)
     {
         $transportObject = new Transport(
             [
