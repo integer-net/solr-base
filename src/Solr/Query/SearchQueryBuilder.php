@@ -161,10 +161,17 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
                 if ($attribute->getIsSearchable() == 1) {
 
                     $fieldName = $this->getFieldName($attribute);
+                    $fieldNameForFullMatch = $this->getFieldName($attribute, false, true);
 
                     if (strstr($fieldName, '_f') == false) {
 
                         $boost = '^' . $this->getNormalizedBoost(floatval($attribute->getSolrBoost()));
+                        $boostForFullMatch = '';
+                        $useFieldForFullMatch = $fieldNameForFullMatch != $fieldName;
+                        if ($useFieldForFullMatch) {
+                            $boostForFullMatch = $boost;
+                            $boost = '^' . $this->getNormalizedBoost(floatval($attribute->getSolrBoost()) / 100);
+                        }
 
                         if ($this->broaden) {
 
@@ -172,34 +179,52 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
                                 $queryText .= ($isFirst) ? '' : ' OR ';
                                 $queryText .= $fieldName . ':"' . trim($value) . '"~100' . $boost;
                                 $isFirst = false;
+                                if ($useFieldForFullMatch) {
+                                    $queryText .= ' OR ' . $fieldNameForFullMatch . ':"' . trim($value) . '"~100' . $boostForFullMatch;
+                                }
                             }
 
                         } else {
                             $queryText .= ($isFirst) ? '' : ' OR ';
                             $queryText .= $fieldName . ':"' . trim($searchValue) . '"~100' . $boost;
                             $isFirst = false;
+                            if ($useFieldForFullMatch) {
+                                $queryText .= ' OR ' . $fieldNameForFullMatch . ':"' . trim($searchValue) . '"~100' . $boostForFullMatch;
+                            }
                         }
                     }
                 }
             }
 
             $fieldName = 'category_name_t_mv';
+            $fieldNameForFullMatch = 'category_name_t_ns_mv';
 
             $categoriesPriority = floatval($this->getResultsConfig()->getPriorityCategories());
             if ($categoriesPriority > 0) {
                 $boost = '^' . $this->getNormalizedBoost($categoriesPriority);
+                $boostForFullMatch = '';
+                $useFieldForFullMatch = $fieldNameForFullMatch != $fieldName;
+                if ($useFieldForFullMatch) {
+                    $boostForFullMatch = $boost;
+                    $boost = '^' . $this->getNormalizedBoost($categoriesPriority / 100);
+                }
 
                 if ($this->broaden) {
 
                     foreach ($searchValue as $value) {
                         $queryText .= ($isFirst) ? '' : ' OR ';
                         $queryText .= $fieldName . ':"' . trim($value) . '"~100' . $boost;
-                        $isFirst = false;
+                        if ($useFieldForFullMatch) {
+                            $queryText .= ' OR ' . $fieldNameForFullMatch . ':"' . trim($value) . '"~100' . $boostForFullMatch;
+                        }
                     }
 
                 } else {
                     $queryText .= ($isFirst) ? '' : ' OR ';
                     $queryText .= $fieldName . ':"' . trim($searchValue) . '"~100' . $boost;
+                    if ($useFieldForFullMatch) {
+                        $queryText .= ' OR ' . $fieldNameForFullMatch . ':"' . trim($searchValue) . '"~100' . $boostForFullMatch;
+                    }
                 }
             }
         }
@@ -217,12 +242,13 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
     /**
      * @param Attribute $attribute
      * @param bool $forSorting
+     * @param bool $forFullMatch
      * @return string
      */
-    private function getFieldName(Attribute $attribute, $forSorting = false)
+    private function getFieldName(Attribute $attribute, $forSorting = false, $forFullMatch = false)
     {
         $indexField = new IndexField($attribute, $this->getEventDispatcher());
-        return $indexField->getFieldName();
+        return $indexField->getFieldName($forFullMatch);
     }
 
     /**

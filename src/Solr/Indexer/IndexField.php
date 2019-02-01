@@ -45,7 +45,7 @@ class IndexField
         return new self($this->attribute, $this->eventDispatcher, $forSorting);
     }
 
-    public function getFieldName()
+    public function getFieldName($forFullMatch = false)
     {
         $transportObject = new Transport(array(
             'fieldname' => '',
@@ -66,6 +66,9 @@ class IndexField
                     return $this->attribute->getAttributeCode() . '_f';
 
                 case Attribute::BACKEND_TYPE_TEXT:
+                    if ($forFullMatch) {
+                        return $this->attribute->getAttributeCode() . '_t_ns';
+                    }
                     return $this->attribute->getAttributeCode() . '_t';
 
                 case Attribute::BACKEND_TYPE_INT:
@@ -75,15 +78,18 @@ class IndexField
                     // fallthrough intended
                 case Attribute::BACKEND_TYPE_VARCHAR:
                 default:
-                    return ($this->forSorting) ? $this->attribute->getAttributeCode() . '_s' : $this->attribute->getAttributeCode() . '_t';
+                    if ($this->forSorting) {
+                        return $this->attribute->getAttributeCode() . '_s';
+                    }
+                    if ($forFullMatch) {
+                        return $this->attribute->getAttributeCode() . '_t_ns';
+                    }
+                    return $this->attribute->getAttributeCode() . '_t';
             }
         } else {
             switch ($this->attribute->getBackendType()) {
                 case Attribute::BACKEND_TYPE_DECIMAL:
                     return $this->attribute->getAttributeCode() . '_f_mv';
-
-                case Attribute::BACKEND_TYPE_TEXT:
-                    return $this->attribute->getAttributeCode() . '_t_mv';
 
                 case Attribute::BACKEND_TYPE_INT:
                     if ($this->attribute->getFacetType() != Attribute::FACET_TYPE_SELECT) {
@@ -91,7 +97,11 @@ class IndexField
                     }
                 // fallthrough intended
                 case Attribute::BACKEND_TYPE_VARCHAR:
+                case Attribute::BACKEND_TYPE_TEXT:
                 default:
+                    if ($forFullMatch) {
+                        return $this->attribute->getAttributeCode() . '_t_ns_mv';
+                    }
                     return $this->attribute->getAttributeCode() . '_t_mv';
             }
         }
