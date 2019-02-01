@@ -161,7 +161,7 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
                 if ($attribute->getIsSearchable() == 1) {
 
                     $fieldName = $this->getFieldName($attribute);
-                    $fieldNameForFullMatch = $this->getFieldName($attribute, false, true);
+                    $fieldNameForFullMatch = $this->getFieldNameForFullMatch($attribute);
 
                     if (strstr($fieldName, '_f') == false) {
 
@@ -241,14 +241,22 @@ final class SearchQueryBuilder extends AbstractQueryBuilder
 
     /**
      * @param Attribute $attribute
-     * @param bool $forSorting
-     * @param bool $forFullMatch
      * @return string
      */
-    private function getFieldName(Attribute $attribute, $forSorting = false, $forFullMatch = false)
+    private function getFieldName(Attribute $attribute)
     {
         $indexField = new IndexField($attribute, $this->getEventDispatcher());
-        return $indexField->getFieldName($forFullMatch);
+        return $indexField->getFieldName();
+    }
+
+    /**
+     * @param Attribute $attribute
+     * @return string
+     */
+    private function getFieldNameForFullMatch(Attribute $attribute)
+    {
+        $indexField = new IndexField($attribute, $this->getEventDispatcher());
+        return $indexField->getFieldNameForFullMatch();
     }
 
     /**

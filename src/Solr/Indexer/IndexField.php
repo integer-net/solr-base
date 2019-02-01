@@ -45,17 +45,44 @@ class IndexField
         return new self($this->attribute, $this->eventDispatcher, $forSorting);
     }
 
-    public function getFieldName($forFullMatch = false)
+    public function getFieldNameForFullMatch()
     {
-        $transportObject = new Transport(array(
-            'fieldname' => '',
-        ));
+        return $this->getFieldNameWithTextFieldSuffix('_t_ns');
+    }
 
-        $this->getEventDispatcher()->dispatch('integernet_solr_get_fieldname', array(
-            'attribute' => $this->attribute, 
-            'transport' => $transportObject
-        ));
-        
+    public function getFieldName()
+    {
+        return $this->getFieldNameWithTextFieldSuffix('_t');
+    }
+
+    /**
+     * @return EventDispatcher
+     */
+    protected function getEventDispatcher()
+    {
+        return $this->eventDispatcher;
+    }
+
+    /**
+     * @param string $textFieldSuffix
+     * @return string
+     */
+    private function getFieldNameWithTextFieldSuffix(string $textFieldSuffix)
+    {
+        $transportObject = new Transport(
+            [
+                'fieldname' => '',
+            ]
+        );
+
+        $this->getEventDispatcher()->dispatch(
+            'integernet_solr_get_fieldname',
+            [
+                'attribute' => $this->attribute,
+                'transport' => $transportObject
+            ]
+        );
+
         if ($fieldName = $transportObject->getData('fieldname')) {
             return $fieldName;
         }
@@ -65,26 +92,21 @@ class IndexField
                 case Attribute::BACKEND_TYPE_DECIMAL:
                     return $this->attribute->getAttributeCode() . '_f';
 
-                case Attribute::BACKEND_TYPE_TEXT:
-                    if ($forFullMatch) {
-                        return $this->attribute->getAttributeCode() . '_t_ns';
-                    }
-                    return $this->attribute->getAttributeCode() . '_t';
-
                 case Attribute::BACKEND_TYPE_INT:
                     if ($this->attribute->getFacetType() !== Attribute::FACET_TYPE_SELECT) {
                         return $this->attribute->getAttributeCode() . '_i';
                     }
-                    // fallthrough intended
+
+                case Attribute::BACKEND_TYPE_TEXT:
+                    return $this->attribute->getAttributeCode() . $textFieldSuffix;
+
+                // fallthrough intended
                 case Attribute::BACKEND_TYPE_VARCHAR:
                 default:
                     if ($this->forSorting) {
                         return $this->attribute->getAttributeCode() . '_s';
                     }
-                    if ($forFullMatch) {
-                        return $this->attribute->getAttributeCode() . '_t_ns';
-                    }
-                    return $this->attribute->getAttributeCode() . '_t';
+                    return $this->attribute->getAttributeCode() . $textFieldSuffix;
             }
         } else {
             switch ($this->attribute->getBackendType()) {
@@ -95,23 +117,13 @@ class IndexField
                     if ($this->attribute->getFacetType() != Attribute::FACET_TYPE_SELECT) {
                         return $this->attribute->getAttributeCode() . '_i_mv';
                     }
+
                 // fallthrough intended
                 case Attribute::BACKEND_TYPE_VARCHAR:
                 case Attribute::BACKEND_TYPE_TEXT:
                 default:
-                    if ($forFullMatch) {
-                        return $this->attribute->getAttributeCode() . '_t_ns_mv';
-                    }
-                    return $this->attribute->getAttributeCode() . '_t_mv';
+                    return $this->attribute->getAttributeCode() . $textFieldSuffix . '_mv';
             }
         }
-    }
-
-    /**
-     * @return EventDispatcher
-     */
-    protected function getEventDispatcher()
-    {
-        return $this->eventDispatcher;
     }
 }
