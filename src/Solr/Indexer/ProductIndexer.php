@@ -403,6 +403,7 @@ class ProductIndexer implements Indexer
 
             $indexField = new IndexField($attribute, $this->eventDispatcher);
             $fieldName = $indexField->getFieldName();
+            $fieldNameForFullMatch = $indexField->getFieldNameForFullMatch();
 
             $solrBoost = floatval($attribute->getSolrBoost());
             if ($solrBoost != 1) {
@@ -413,6 +414,7 @@ class ProductIndexer implements Indexer
                 && $value = $product->getSearchableAttributeValue($attribute)
             ) {
                 $productData->setData($fieldName, $value);
+                $productData->setData($fieldNameForFullMatch, $value);
 
                 if (strstr($fieldName, '_t') == true && $attribute->getUsedForSortBy()) {
                     $productData->setData(
