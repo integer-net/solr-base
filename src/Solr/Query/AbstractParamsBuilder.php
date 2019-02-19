@@ -117,6 +117,7 @@ abstract class AbstractParamsBuilder implements ParamsBuilder, HasFilter, HasPag
             'facet.sort' => 'true',
             'facet.mincount' => '1',
             'facet.field' => $this->getFacetFieldCodes(),
+            'facet.limit' => 10000,
             'defType' => 'edismax',
             'mm' => '1',
         );
