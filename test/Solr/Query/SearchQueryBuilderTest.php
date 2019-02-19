@@ -78,6 +78,7 @@ class SearchQueryBuilderTest extends PHPUnit_Framework_TestCase
             'stats' => 'true',
             'stats.field' => ['price_f'],
             'facet.range' => 'price_f',
+            'facet.limit' => 10000,
             'f.price_f.facet.range.start' => 0,
             'f.price_f.facet.range.end' => ResultConfigBuilder::DEFAULT_MAX_PRICE,
             'f.price_f.facet.range.gap' => ResultConfigBuilder::DEFAULT_STEP_SIZE,
