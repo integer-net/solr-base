@@ -181,6 +181,7 @@ class SearchRequest implements Request, HasFilter
             'start_item' => 0,
             'page_size' => $pageSize,
             'params' => $query->getParams(),
+            'attribute_to_reset' => '',
         ));
 
         $this->eventDispatcher->dispatch('integernet_solr_before_search_request', array('transport' => $transportObject));
@@ -215,6 +216,7 @@ class SearchRequest implements Request, HasFilter
                 'start_item' => 0,
                 'page_size' => 0,
                 'params' => $query->getParams(),
+                'attribute_to_reset' => $attributeCode,
             ));
 
             $this->eventDispatcher->dispatch('integernet_solr_before_search_request', array('transport' => $transportObject));
