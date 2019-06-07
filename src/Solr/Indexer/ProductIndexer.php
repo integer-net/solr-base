@@ -636,7 +636,10 @@ class ProductIndexer implements Indexer
         return $this->_getResource()->checkSwapCoresConfiguration($restrictToStoreIds);
     }
 
-    private function getProgressDispatcher(): ProgressDispatcher
+    /**
+     * @return ProgressDispatcher
+     */
+    private function getProgressDispatcher()
     {
         if ($this->progressDispatcher === null) {
             $this->progressDispatcher = new ProgressDispatcher($this->progressHandlers);
